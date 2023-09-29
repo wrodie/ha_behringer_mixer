@@ -1,15 +1,15 @@
-"""Switch platform for integration_blueprint."""
+"""Switch platform for behringer_mixer."""
 from __future__ import annotations
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 
 from .const import DOMAIN
 from .coordinator import BlueprintDataUpdateCoordinator
-from .entity import IntegrationBlueprintEntity
+from .entity import BehringerMixerEntity
 
 ENTITY_DESCRIPTIONS = (
     SwitchEntityDescription(
-        key="integration_blueprint",
+        key="behringer_mixer",
         name="Integration Switch",
         icon="mdi:format-quote-close",
     ),
@@ -20,7 +20,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
     """Set up the sensor platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_devices(
-        IntegrationBlueprintSwitch(
+        BehringerMixerSwitch(
             coordinator=coordinator,
             entity_description=entity_description,
         )
@@ -28,8 +28,8 @@ async def async_setup_entry(hass, entry, async_add_devices):
     )
 
 
-class IntegrationBlueprintSwitch(IntegrationBlueprintEntity, SwitchEntity):
-    """integration_blueprint switch class."""
+class BehringerMixerSwitch(BehringerMixerEntity, SwitchEntity):
+    """behringer_mixer switch class."""
 
     def __init__(
         self,

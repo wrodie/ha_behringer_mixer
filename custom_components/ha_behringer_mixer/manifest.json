@@ -1,0 +1,12 @@
+{
+  "domain": "ha_behringer_mixer",
+  "name": "Behringer Mixer",
+  "codeowners": [
+    "@wrodie"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/wrodie/ha_behringer_mixer",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/wrodie/ha_behringer_mixer/issues",
+  "version": "0.0.0"
+}

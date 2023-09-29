@@ -1,4 +1,4 @@
-"""Binary sensor platform for integration_blueprint."""
+"""Binary sensor platform for behringer_mixer."""
 from __future__ import annotations
 
 from homeassistant.components.binary_sensor import (
@@ -9,11 +9,11 @@ from homeassistant.components.binary_sensor import (
 
 from .const import DOMAIN
 from .coordinator import BlueprintDataUpdateCoordinator
-from .entity import IntegrationBlueprintEntity
+from .entity import BehringerMixerEntity
 
 ENTITY_DESCRIPTIONS = (
     BinarySensorEntityDescription(
-        key="integration_blueprint",
+        key="behringer_mixer",
         name="Integration Blueprint Binary Sensor",
         device_class=BinarySensorDeviceClass.CONNECTIVITY,
     ),
@@ -24,7 +24,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
     """Set up the binary_sensor platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_devices(
-        IntegrationBlueprintBinarySensor(
+        BehringerMixerBinarySensor(
             coordinator=coordinator,
             entity_description=entity_description,
         )
@@ -32,8 +32,8 @@ async def async_setup_entry(hass, entry, async_add_devices):
     )
 
 
-class IntegrationBlueprintBinarySensor(IntegrationBlueprintEntity, BinarySensorEntity):
-    """integration_blueprint binary_sensor class."""
+class BehringerMixerBinarySensor(BehringerMixerEntity, BinarySensorEntity):
+    """behringer_mixer binary_sensor class."""
 
     def __init__(
         self,
