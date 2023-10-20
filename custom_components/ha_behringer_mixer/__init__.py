@@ -6,18 +6,19 @@ https://github.com/ludeeus/integration_blueprint
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import BehringerMixerApiClient
 from .const import DOMAIN
 from .coordinator import BlueprintDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [
-    Platform.SENSOR,
-    Platform.BINARY_SENSOR,
+    #Platform.SENSOR,
+    #Platform.BINARY_SENSOR,
     Platform.SWITCH,
+    Platform.NUMBER,
+    Platform.SENSOR,
 ]
 
 
@@ -28,9 +29,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id] = coordinator = BlueprintDataUpdateCoordinator(
         hass=hass,
         client=BehringerMixerApiClient(
-            username=entry.data[CONF_USERNAME],
-            password=entry.data[CONF_PASSWORD],
-            session=async_get_clientsession(hass),
+            mixer_ip=entry.data["MIXER_IP"],
+            mixer_type=entry.data["MIXER_TYPE"]
         ),
     )
     # https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities

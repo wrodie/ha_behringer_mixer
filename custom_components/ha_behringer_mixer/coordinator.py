@@ -14,7 +14,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from .api import (
     BehringerMixerApiClient,
     BehringerMixerApiClientAuthenticationError,
-    BehringerMixerApiClientError,
+    BehringerMixerApiClientError
 )
 from .const import DOMAIN, LOGGER
 
@@ -38,6 +38,8 @@ class BlueprintDataUpdateCoordinator(DataUpdateCoordinator):
             name=DOMAIN,
             update_interval=timedelta(minutes=5),
         )
+    # async def async_set_updated_data(self):
+    #    pass
 
     async def _async_update_data(self):
         """Update data via library."""

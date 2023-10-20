@@ -7,25 +7,32 @@ from .const import DOMAIN
 from .coordinator import BlueprintDataUpdateCoordinator
 from .entity import BehringerMixerEntity
 
-ENTITY_DESCRIPTIONS = (
-    SwitchEntityDescription(
-        key="behringer_mixer",
-        name="Integration Switch",
-        icon="mdi:format-quote-close",
-    ),
-)
-
 
 async def async_setup_entry(hass, entry, async_add_devices):
     """Set up the sensor platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_devices(
-        BehringerMixerSwitch(
-            coordinator=coordinator,
-            entity_description=entity_description,
+    devices_list = build_entities(coordinator)
+    async_add_devices(devices_list)
+
+
+def build_entities(coordinator):
+    """Build up the entities"""
+    entities = []
+    number_channels = 3  # coordinator.numberOfChannels
+    for index_number in range(1, number_channels + 1):
+        description = SwitchEntityDescription(
+            key=f"{coordinator.config_entry.entry_id}_channel_{index_number}_on",
+            name=f"Channel {index_number} On",
+            icon="mdi:volume-high",
         )
-        for entity_description in ENTITY_DESCRIPTIONS
-    )
+        entities.append(
+            BehringerMixerSwitch(
+                coordinator=coordinator,
+                entity_description=description,
+                base_address=f"/ch/{index_number}",
+            )
+        )
+    return entities
 
 
 class BehringerMixerSwitch(BehringerMixerEntity, SwitchEntity):
@@ -35,22 +42,48 @@ class BehringerMixerSwitch(BehringerMixerEntity, SwitchEntity):
         self,
         coordinator: BlueprintDataUpdateCoordinator,
         entity_description: SwitchEntityDescription,
+        base_address: str,
     ) -> None:
         """Initialize the switch class."""
         super().__init__(coordinator)
+        self.base_address = base_address
+        self._attr_unique_id = entity_description.key
         self.entity_description = entity_description
+        print(entity_description)
+
+    @property
+    def name(self) -> str | None:
+        """Name  of the entity."""
+        return self._attr_unique_id
+        return self.coordinator.data.get(self.base_address + "/config_name", "")
+
+    @property
+    def friendly_name(self) -> str | None:
+        """Name  of the entity."""
+        return self.coordinator.data.get(self.base_address + "/config_name", "")
+
+    @property
+    def icon(self) -> str | None:
+        """Icon of the entity."""
+        if self.is_on:
+            return "mdi:volume-high"
+        return "mdi:volume-mute"
 
     @property
     def is_on(self) -> bool:
         """Return true if the switch is on."""
-        return self.coordinator.data.get("title", "") == "foo"
+        return self.coordinator.data.get(self.base_address + "/mix_on", False)
 
     async def async_turn_on(self, **_: any) -> None:
         """Turn on the switch."""
-        await self.coordinator.api.async_set_title("bar")
+        await self.coordinator.client.async_set_value(
+            self.base_address + "/mix_on", True
+        )
         await self.coordinator.async_request_refresh()
 
     async def async_turn_off(self, **_: any) -> None:
         """Turn off the switch."""
-        await self.coordinator.api.async_set_title("foo")
+        await self.coordinator.client.async_set_value(
+            self.base_address + "/mix_on", False
+        )
         await self.coordinator.async_request_refresh()

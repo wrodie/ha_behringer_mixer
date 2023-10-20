@@ -5,5 +5,5 @@ LOGGER: Logger = getLogger(__package__)
 
 NAME = "Behringer Mixer"
 DOMAIN = "ha_behringer_mixer"
-VERSION = "0.0.0"
+VERSION = "0.0.1"
 ATTRIBUTION = "Data provided by http://jsonplaceholder.typicode.com/"

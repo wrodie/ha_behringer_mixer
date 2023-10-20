@@ -1,9 +1,8 @@
-"""Adds config flow for Blueprint."""
+"""Adds config flow for BehringerMixer."""
 from __future__ import annotations
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
@@ -16,8 +15,8 @@ from .api import (
 from .const import DOMAIN, LOGGER
 
 
-class BlueprintFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    """Config flow for Blueprint."""
+class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
+    """Config flow for BehringerMixer."""
 
     VERSION = 1
 
@@ -29,9 +28,9 @@ class BlueprintFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         _errors = {}
         if user_input is not None:
             try:
-                await self._test_credentials(
-                    username=user_input[CONF_USERNAME],
-                    password=user_input[CONF_PASSWORD],
+                await self._test_connect(
+                    mixer_ip=user_input["MIXER_IP"],
+                    mixer_type=user_input["MIXER_TYPE"],
                 )
             except BehringerMixerApiClientAuthenticationError as exception:
                 LOGGER.warning(exception)
@@ -44,7 +43,7 @@ class BlueprintFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 _errors["base"] = "unknown"
             else:
                 return self.async_create_entry(
-                    title=user_input[CONF_USERNAME],
+                    title=user_input["MIXER_IP"],
                     data=user_input,
                 )
 
@@ -52,17 +51,14 @@ class BlueprintFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=vol.Schema(
                 {
-                    vol.Required(
-                        CONF_USERNAME,
-                        default=(user_input or {}).get(CONF_USERNAME),
-                    ): selector.TextSelector(
+                    vol.Required("MIXER_IP"): selector.TextSelector(
                         selector.TextSelectorConfig(
                             type=selector.TextSelectorType.TEXT
                         ),
                     ),
-                    vol.Required(CONF_PASSWORD): selector.TextSelector(
+                    vol.Required("MIXER_TYPE", default="X32"): selector.TextSelector(
                         selector.TextSelectorConfig(
-                            type=selector.TextSelectorType.PASSWORD
+                            type=selector.TextSelectorType.TEXT
                         ),
                     ),
                 }
@@ -70,11 +66,10 @@ class BlueprintFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             errors=_errors,
         )
 
-    async def _test_credentials(self, username: str, password: str) -> None:
+    async def _test_connect(self, mixer_ip: str, mixer_type: str) -> None:
         """Validate credentials."""
         client = BehringerMixerApiClient(
-            username=username,
-            password=password,
-            session=async_create_clientsession(self.hass),
+            mixer_ip=mixer_ip,
+            mixer_type=mixer_type
         )
         await client.async_get_data()

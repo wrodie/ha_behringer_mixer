@@ -1,7 +1,7 @@
-"""Sensor platform for behringer_mixer."""
+"""Number platform for behringer_mixer."""
 from __future__ import annotations
 
-from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
+from homeassistant.components.number import NumberEntity, NumberEntityDescription
 
 from .const import DOMAIN
 from .coordinator import BlueprintDataUpdateCoordinator
@@ -18,15 +18,15 @@ async def async_setup_entry(hass, entry, async_add_devices):
 def build_entities(coordinator):
     """Build up the entities"""
     entities = []
-    number_channels = 3  # coordinator.SensorOfChannels
+    number_channels = 3  # coordinator.numberOfChannels
     for index_number in range(1, number_channels + 1):
-        description = SensorEntityDescription(
-            key=f"{coordinator.config_entry.entry_id}_channel_{index_number}_fader_db",
-            name=f"Channel {index_number} Fader (dB)",
+        description = NumberEntityDescription(
+            key=f"{coordinator.config_entry.entry_id}_channel_{index_number}_fader",
+            name=f"Channel {index_number} Fader",
             icon="mdi:volume-high",
         )
         entities.append(
-            BehringerMixerSensor(
+            BehringerMixerNumber(
                 coordinator=coordinator,
                 entity_description=description,
                 base_address=f"/ch/{index_number}",
@@ -35,19 +35,19 @@ def build_entities(coordinator):
     return entities
 
 
-class BehringerMixerSensor(BehringerMixerEntity, SensorEntity):
-    """behringer_mixer Sensor class."""
+class BehringerMixerNumber(BehringerMixerEntity, NumberEntity):
+    """behringer_mixer Number class."""
 
-    _attr_device_class = "SensorDeviceClass.SOUND_PRESSURE"
-    _attr_native_unit_of_measurement = "dB"
+    _attr_native_max_value = 1
+    _attr_native_min_value = 0
 
     def __init__(
         self,
         coordinator: BlueprintDataUpdateCoordinator,
-        entity_description: SensorEntityDescription,
+        entity_description: NumberEntityDescription,
         base_address: str,
     ) -> None:
-        """Initialize the Sensor class."""
+        """Initialize the Number class."""
         super().__init__(coordinator)
         self.base_address = base_address
         self._attr_unique_id = entity_description.key
@@ -57,12 +57,19 @@ class BehringerMixerSensor(BehringerMixerEntity, SensorEntity):
     def name(self) -> str | None:
         """Name  of the entity."""
         value = (
-            self.coordinator.data.get(self.base_address + "/config_name", "")
-            + " Fader dB"
+            self.coordinator.data.get(self.base_address + "/config_name", "") + " Fader"
         )
         return value
 
     @property
     def native_value(self) -> float | None:
         """Value of the entity."""
-        return self.coordinator.data.get(self.base_address + "/mix_fader_db", "")
+        return self.coordinator.data.get(self.base_address + "/mix_fader", "")
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Update the current value."""
+
+        await self.coordinator.client.async_set_value(
+            self.base_address + "/mix_fader", value
+        )
+        await self.coordinator.async_request_refresh()

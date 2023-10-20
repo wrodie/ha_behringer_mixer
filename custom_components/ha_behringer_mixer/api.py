@@ -1,90 +1,67 @@
 """Sample API Client."""
 from __future__ import annotations
-
-import asyncio
-import socket
-
-import aiohttp
-import async_timeout
+import logging
+from .behringer_mixer import mixer_api
 
 
 class BehringerMixerApiClientError(Exception):
     """Exception to indicate a general API error."""
 
 
-class BehringerMixerApiClientCommunicationError(
-    BehringerMixerApiClientError
-):
+class BehringerMixerApiClientCommunicationError(BehringerMixerApiClientError):
     """Exception to indicate a communication error."""
 
 
-class BehringerMixerApiClientAuthenticationError(
-    BehringerMixerApiClientError
-):
+class BehringerMixerApiClientAuthenticationError(BehringerMixerApiClientError):
     """Exception to indicate an authentication error."""
 
 
 class BehringerMixerApiClient:
     """Sample API Client."""
 
-    def __init__(
-        self,
-        username: str,
-        password: str,
-        session: aiohttp.ClientSession,
-    ) -> None:
+    def __init__(self, mixer_ip: str, mixer_type: str) -> None:
         """Sample API Client."""
-        self._username = username
-        self._password = password
-        self._session = session
+        self._mixer_ip = mixer_ip
+        self._mixer_type = mixer_type
+        self._state = {}
+        self._num_channels = 0
+        self._num_bus = 0
+        self._num_matrix = 0
+        self._num_dca = 0
+        print(f"CONNECT {self._mixer_type} : {self._mixer_ip}")
+        self._mixer = mixer_api.connect(
+            self._mixer_type, ip=self._mixer_ip, logLevel=logging.WARNING
+        )
 
     async def async_get_data(self) -> any:
         """Get data from the API."""
-        return await self._api_wrapper(
-            method="get", url="https://jsonplaceholder.typicode.com/posts/1"
-        )
+        await self._mixer.connectserver()
+        await self._mixer.reload()
+        #self._generate_state()
+        #self._update_mixer_counts()
+        return self._mixer.state()
 
-    async def async_set_title(self, value: str) -> any:
-        """Get data from the API."""
-        return await self._api_wrapper(
-            method="patch",
-            url="https://jsonplaceholder.typicode.com/posts/1",
-            data={"title": value},
-            headers={"Content-type": "application/json; charset=UTF-8"},
-        )
+    async def async_set_value(self, address: str, value: str) -> any:
+        """Set data"""
+        return await self._mixer.set_value(address, value)
 
-    async def _api_wrapper(
-        self,
-        method: str,
-        url: str,
-        data: dict | None = None,
-        headers: dict | None = None,
-    ) -> any:
-        """Get information from the API."""
-        try:
-            async with async_timeout.timeout(10):
-                response = await self._session.request(
-                    method=method,
-                    url=url,
-                    headers=headers,
-                    json=data,
-                )
-                if response.status in (401, 403):
-                    raise BehringerMixerApiClientAuthenticationError(
-                        "Invalid credentials",
-                    )
-                response.raise_for_status()
-                return await response.json()
+    def _update_mixer_counts(self):
+        "Using the data coming back from the state set number of channels etc"
+        self._num_channels = len(self._state.get("ch") or [])
+        self._num_bus = len(self._state.get("bus") or [])
+        self._num_dca = len(self._state.get("dca") or [])
 
-        except asyncio.TimeoutError as exception:
-            raise BehringerMixerApiClientCommunicationError(
-                "Timeout error fetching information",
-            ) from exception
-        except (aiohttp.ClientError, socket.gaierror) as exception:
-            raise BehringerMixerApiClientCommunicationError(
-                "Error fetching information",
-            ) from exception
-        except Exception as exception:  # pylint: disable=broad-except
-            raise BehringerMixerApiClientError(
-                "Something really wrong happened!"
-            ) from exception
+    def _generate_state(self):
+        "Split the incoming data into groups and save as state"
+        state = self._mixer.state()
+        split_state = {}
+        for key in sorted(state.keys()):
+            value = state[key]
+            key_path = key.split('/') or []
+            state_level = split_state
+            for key_part in key_path[1:-1]:
+                state_level.setdefault(key_part, {})
+                state_level = state_level[key_part]
+            state_level[key_path[-1]] = value
+        self._state = split_state
+        return True

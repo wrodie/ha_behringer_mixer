@@ -21,5 +21,6 @@ class BehringerMixerEntity(CoordinatorEntity):
             identifiers={(DOMAIN, self.unique_id)},
             name=NAME,
             model=VERSION,
-            manufacturer=NAME,
+            manufacturer="Behringer",
         )
+        self.base_address = ""
