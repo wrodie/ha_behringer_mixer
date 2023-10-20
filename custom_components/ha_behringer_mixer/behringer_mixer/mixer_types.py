@@ -38,9 +38,21 @@ class MixerTypeBase(MixerBase):
 
     cmd_scene_load = "/-action/goscene"
 
+    def info(self):
+        """ Return information about the mixer """
+        return {
+            "channel": self.num_channel,
+            "bus": self.num_bus,
+            "dca": self.num_dca,
+            "matrix": self.num_matrix,
+            "fx": self.num_fx,
+            "auxrtn": self.num_auxrtn,
+            "scenes": self.num_scenes,
+        }
+
 
 class MixerTypeXAir(MixerTypeBase):
-    # Base Mixer class for the XAir type mixers
+    """ Base Mixer class for the XAir type mixers """
     port_number: int = 10024
 
     cmd_scene_load = "/-snap/load"
@@ -52,7 +64,7 @@ class MixerTypeXAir(MixerTypeBase):
     ]
 
     def __init__(self, *args):
-        self.address_to_load.append(self.extra_address_to_load)
+        self.addresses_to_load.append(self.extra_addresses_to_load)
         super().__init__(*args)
 
 

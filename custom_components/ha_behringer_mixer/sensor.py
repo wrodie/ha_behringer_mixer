@@ -41,17 +41,6 @@ class BehringerMixerSensor(BehringerMixerEntity, SensorEntity):
     _attr_device_class = "SensorDeviceClass.SOUND_PRESSURE"
     _attr_native_unit_of_measurement = "dB"
 
-    def __init__(
-        self,
-        coordinator: BlueprintDataUpdateCoordinator,
-        entity_description: SensorEntityDescription,
-        base_address: str,
-    ) -> None:
-        """Initialize the Sensor class."""
-        super().__init__(coordinator)
-        self.base_address = base_address
-        self._attr_unique_id = entity_description.key
-        self.entity_description = entity_description
 
     @property
     def name(self) -> str | None:

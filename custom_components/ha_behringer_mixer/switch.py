@@ -38,27 +38,8 @@ def build_entities(coordinator):
 class BehringerMixerSwitch(BehringerMixerEntity, SwitchEntity):
     """behringer_mixer switch class."""
 
-    def __init__(
-        self,
-        coordinator: BlueprintDataUpdateCoordinator,
-        entity_description: SwitchEntityDescription,
-        base_address: str,
-    ) -> None:
-        """Initialize the switch class."""
-        super().__init__(coordinator)
-        self.base_address = base_address
-        self._attr_unique_id = entity_description.key
-        self.entity_description = entity_description
-        print(entity_description)
-
     @property
     def name(self) -> str | None:
-        """Name  of the entity."""
-        return self._attr_unique_id
-        return self.coordinator.data.get(self.base_address + "/config_name", "")
-
-    @property
-    def friendly_name(self) -> str | None:
         """Name  of the entity."""
         return self.coordinator.data.get(self.base_address + "/config_name", "")
 

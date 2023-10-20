@@ -41,17 +41,6 @@ class BehringerMixerNumber(BehringerMixerEntity, NumberEntity):
     _attr_native_max_value = 1
     _attr_native_min_value = 0
 
-    def __init__(
-        self,
-        coordinator: BlueprintDataUpdateCoordinator,
-        entity_description: NumberEntityDescription,
-        base_address: str,
-    ) -> None:
-        """Initialize the Number class."""
-        super().__init__(coordinator)
-        self.base_address = base_address
-        self._attr_unique_id = entity_description.key
-        self.entity_description = entity_description
 
     @property
     def name(self) -> str | None:

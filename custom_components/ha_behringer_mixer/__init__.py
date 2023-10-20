@@ -14,8 +14,6 @@ from .const import DOMAIN
 from .coordinator import BlueprintDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [
-    #Platform.SENSOR,
-    #Platform.BINARY_SENSOR,
     Platform.SWITCH,
     Platform.NUMBER,
     Platform.SENSOR,

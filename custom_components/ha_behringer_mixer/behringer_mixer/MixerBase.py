@@ -18,6 +18,11 @@ class MixerBase:
     _CONNECT_TIMEOUT = 0.5
 
     _info_response = []
+    port_number: int = 10023
+    delay: float = 0.02
+    addresses_to_load = []
+    cmd_scene_load = ""
+
 
     def __init__(self, **kwargs):
         self.ip = kwargs.get("ip")
@@ -36,6 +41,7 @@ class MixerBase:
         self.server = None
 
     async def validate_connection(self):
+        """Validate connection to the mixer"""
         await self.send("/xinfo")
         await asyncio.sleep(self._CONNECT_TIMEOUT)
         if not self.info_response:
@@ -48,21 +54,27 @@ class MixerBase:
 
     @property
     def info_response(self):
+        """Return any OSC responses"""
         return self._info_response
 
     async def connectserver(self):
+        """Connect to the server"""
         await self.startup()
-        #asyncio.run(self.startup())
+        # asyncio.run(self.startup())
 
     async def startup(self):
+        """Startup the server"""
         dispatcher = Dispatcher()
         dispatcher.set_default_handler(self.msg_handler)
-        self.server = OSCClientServer((self.ip, self.port), dispatcher, asyncio.get_event_loop())
+        self.server = OSCClientServer(
+            (self.ip, self.port), dispatcher, asyncio.get_event_loop()
+        )
         transport, protocol = await self.server.create_serve_endpoint()
         self.server.register_transport(transport)
         await self.validate_connection()
 
     def msg_handler(self, addr, *data):
+        """Handle callback response"""
         self.logger.debug(f"received: {addr} {data if data else ''}")
         updates = self._update_state(addr, data)
         if self._callback_function:
@@ -72,6 +84,7 @@ class MixerBase:
             self._info_response = data[:]
 
     async def send(self, addr: str, param: Optional[str] = None):
+        """Send an OSC message"""
         self.logger.debug(f"sending: {addr} {param if param is not None else ''}")
         self.server.send_message(addr, param)
         self._info_response = None
@@ -95,7 +108,9 @@ class MixerBase:
         )
         self.subscription.start()
 
-    async def _subscribe_worker(self, parameter_string, callback_function, *other_params):
+    async def _subscribe_worker(
+        self, parameter_string, callback_function, *other_params
+    ):
         self._callback_function = callback_function
         await self.send(parameter_string)
         renew_string = "/renew"
@@ -116,22 +131,22 @@ class MixerBase:
         pass
 
     def state(self, key=None):
-        # Return current mixer state
+        """Return current mixer state"""
         if key:
             return self._state.get(key)
         return self._state
 
     async def load_scene(self, scene_number):
-        # Return current mixer state
+        """Return current mixer state"""
         await self.send(self.cmd_scene_load, scene_number)
 
     async def reload(self):
-        # Reload state
+        """Reload state"""
         self._state = {}
         await self._load_initial()
 
     async def _load_initial(self):
-        # Load initial state
+        """Load initial state"""
         expanded_addresses = []
         for address_row in self.addresses_to_load:
             address = address_row[0]
@@ -211,11 +226,12 @@ class MixerBase:
             self._rewrites_reverse = {v: k for k, v in self._rewrites.items()}
 
     async def set_value(self, address, value):
+        """Set the value in the mixer"""
         print(f"SET VALUE {address} {value}")
         if address.endswith("_db"):
             address = address.replace("_db", "")
             value = db_to_fader(value)
-        if value is  False:
+        if value is False:
             value = 0
         if value is True:
             value = 1
