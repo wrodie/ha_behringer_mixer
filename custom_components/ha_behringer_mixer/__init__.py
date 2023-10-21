@@ -24,12 +24,15 @@ PLATFORMS: list[Platform] = [
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up this integration using UI."""
     hass.data.setdefault(DOMAIN, {})
+
+    client = BehringerMixerApiClient(
+        mixer_ip=entry.data["MIXER_IP"], mixer_type=entry.data["MIXER_TYPE"]
+    )
+    await client.setup()
+
     hass.data[DOMAIN][entry.entry_id] = coordinator = BlueprintDataUpdateCoordinator(
         hass=hass,
-        client=BehringerMixerApiClient(
-            mixer_ip=entry.data["MIXER_IP"],
-            mixer_type=entry.data["MIXER_TYPE"]
-        ),
+        client=client,
     )
     # https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
     await coordinator.async_config_entry_first_refresh()

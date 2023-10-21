@@ -23,3 +23,8 @@ class OSCClientServer(AsyncIOOSCUDPServer):
 
     def register_transport(self, transport):
         self.transport = transport
+
+    def shutdown(self):
+        self.transport.close()
+        self.transport = None
+

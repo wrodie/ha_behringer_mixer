@@ -23,7 +23,6 @@ class MixerBase:
     addresses_to_load = []
     cmd_scene_load = ""
 
-
     def __init__(self, **kwargs):
         self.ip = kwargs.get("ip")
         self.port = kwargs.get("port") or self.port_number
@@ -64,14 +63,17 @@ class MixerBase:
 
     async def startup(self):
         """Startup the server"""
-        dispatcher = Dispatcher()
-        dispatcher.set_default_handler(self.msg_handler)
-        self.server = OSCClientServer(
-            (self.ip, self.port), dispatcher, asyncio.get_event_loop()
-        )
-        transport, protocol = await self.server.create_serve_endpoint()
-        self.server.register_transport(transport)
-        await self.validate_connection()
+        print("in Startup")
+        if not self.server:
+            print("starting server")
+            dispatcher = Dispatcher()
+            dispatcher.set_default_handler(self.msg_handler)
+            self.server = OSCClientServer(
+                (self.ip, self.port), dispatcher, asyncio.get_event_loop()
+            )
+            transport, protocol = await self.server.create_serve_endpoint()
+            self.server.register_transport(transport)
+            await self.validate_connection()
 
     def msg_handler(self, addr, *data):
         """Handle callback response"""
@@ -94,8 +96,8 @@ class MixerBase:
         await self.send(address)
         return self.info_response
 
-    def subscribe(self, callback_function):
-        self._subscribe("/xremote", callback_function)
+    async def subscribe(self, callback_function):
+        await self._subscribe_worker("/xremote", callback_function)
 
     def _subscribe(self, parameter_string, callback_function):
         self.subscription = threading.Thread(
@@ -108,9 +110,7 @@ class MixerBase:
         )
         self.subscription.start()
 
-    async def _subscribe_worker(
-        self, parameter_string, callback_function, *other_params
-    ):
+    async def _subscribe_worker(self, parameter_string, callback_function):
         self._callback_function = callback_function
         await self.send(parameter_string)
         renew_string = "/renew"
@@ -126,9 +126,9 @@ class MixerBase:
         self._callback_function = None
         return True
 
-    def __exit__(self, exc_type, exc_value, exc_tr):
-        # self.server.shutdown()
-        pass
+    async def disconnect(self):
+        await self.server.shutdown()
+        return True
 
     def state(self, key=None):
         """Return current mixer state"""
