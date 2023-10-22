@@ -22,6 +22,7 @@ class MixerBase:
     delay: float = 0.02
     addresses_to_load = []
     cmd_scene_load = ""
+    tasks = set()
 
     def __init__(self, **kwargs):
         self.ip = kwargs.get("ip")
@@ -63,23 +64,22 @@ class MixerBase:
 
     async def startup(self):
         """Startup the server"""
-        print("in Startup")
         if not self.server:
-            print("starting server")
             dispatcher = Dispatcher()
             dispatcher.set_default_handler(self.msg_handler)
             self.server = OSCClientServer(
                 (self.ip, self.port), dispatcher, asyncio.get_event_loop()
             )
             transport, protocol = await self.server.create_serve_endpoint()
-            self.server.register_transport(transport)
+            self.server.register_transport(transport, protocol)
             await self.validate_connection()
 
     def msg_handler(self, addr, *data):
         """Handle callback response"""
         self.logger.debug(f"received: {addr} {data if data else ''}")
-        updates = self._update_state(addr, data)
-        if self._callback_function:
+        handling_subscriptions = bool(self._callback_function)
+        updates = self._update_state(addr, data, handling_subscriptions)
+        if handling_subscriptions:
             for row in updates:
                 self._callback_function(row)
         else:
@@ -93,22 +93,16 @@ class MixerBase:
         await asyncio.sleep(self._delay)
 
     async def query(self, address):
+        """Send an receive the value of an OSC message"""
         await self.send(address)
         return self.info_response
 
     async def subscribe(self, callback_function):
         await self._subscribe_worker("/xremote", callback_function)
 
-    def _subscribe(self, parameter_string, callback_function):
-        self.subscription = threading.Thread(
-            target=self._subscribe_worker,
-            args=(
-                parameter_string,
-                callback_function,
-            ),
-            daemon=True,
-        )
-        self.subscription.start()
+    # async def _subscribe(self, parameter_string, callback_function):
+    #    self._subscribe_worker(parameter_string, callback_function)
+    #    return True
 
     async def _subscribe_worker(self, parameter_string, callback_function):
         self._callback_function = callback_function
@@ -173,11 +167,11 @@ class MixerBase:
         for address in expanded_addresses:
             await self.send(address)
 
-    def _update_state(self, address, values):
+    def _update_state(self, address, values, updates_only=False):
         # update internal state representation
         # State looks like
-        #    /ch/02/mix_fader = Value
-        #    /ch/02/config_name = Value
+        #    /ch/2/mix_fader = Value
+        #    /ch/2/config_name = Value
         rewrite_key = self._rewrites.get(address)
         if rewrite_key:
             address = rewrite_key
@@ -185,14 +179,13 @@ class MixerBase:
         value = values[0]
         updates = []
         if state_key:
-            if self._callback_function and state_key not in self._state:
-                # we are processing updates and data captured is not in initial state
-                # Therefore we want to ignore data
-                return updates
-
             if state_key.endswith("_on"):
                 value = bool(value)
             state_key = re.sub(r"/0+(\d+)/", r"/\1/", state_key)
+            if updates_only and state_key not in self._state:
+                # we are processing updates and data captured is not in initial state
+                # Therefore we want to ignore data
+                return updates
             self._state[state_key] = value
             updates.append({"property": state_key, "value": value})
             if state_key.endswith("_fader"):
@@ -227,7 +220,6 @@ class MixerBase:
 
     async def set_value(self, address, value):
         """Set the value in the mixer"""
-        print(f"SET VALUE {address} {value}")
         if address.endswith("_db"):
             address = address.replace("_db", "")
             value = db_to_fader(value)

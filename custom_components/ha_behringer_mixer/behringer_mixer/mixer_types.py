@@ -4,7 +4,8 @@ from .MixerBase import MixerBase
 
 
 class MixerTypeBase(MixerBase):
-    """ Base class for mixer type configuration """
+    """Base class for mixer type configuration"""
+
     mixer_type: str = ""
     port_number: int = 10023
     delay: float = 0.02
@@ -23,9 +24,9 @@ class MixerTypeBase(MixerBase):
         ["/bus/{num_bus}/mix/fader"],
         ["/bus/{num_bus}/mix/on"],
         ["/bus/{num_bus}/config/name"],
-        ["/mtx/{num_matrix:2}/mix/fader"],
-        ["/mtx/{num_matrix:2}/mix/on"],
-        ["/mtx/{num_matrix:2}/config/name"],
+        ["/mtx/{num_matrix}/mix/fader"],
+        ["/mtx/{num_matrix}/mix/on"],
+        ["/mtx/{num_matrix}/config/name"],
         ["/dca/{num_dca}/fader"],
         ["/dca/{num_dca}/on"],
         ["/dca/{num_dca}/config/name"],
@@ -39,7 +40,7 @@ class MixerTypeBase(MixerBase):
     cmd_scene_load = "/-action/goscene"
 
     def info(self):
-        """ Return information about the mixer """
+        """Return information about the mixer"""
         return {
             "channel": self.num_channel,
             "bus": self.num_bus,
@@ -52,7 +53,8 @@ class MixerTypeBase(MixerBase):
 
 
 class MixerTypeXAir(MixerTypeBase):
-    """ Base Mixer class for the XAir type mixers """
+    """Base Mixer class for the XAir type mixers"""
+
     port_number: int = 10024
 
     cmd_scene_load = "/-snap/load"
@@ -69,7 +71,8 @@ class MixerTypeXAir(MixerTypeBase):
 
 
 class MixerTypeX32(MixerTypeBase):
-    """ Class for Behringer X32 Mixer """
+    """Class for Behringer X32 Mixer"""
+
     mixer_type: str = "X32"
     num_channel: int = 32
     num_bus: int = 16
@@ -80,7 +83,8 @@ class MixerTypeX32(MixerTypeBase):
 
 
 class MixerTypeXR12(MixerTypeXAir):
-    """ Class for Behringer XR-12 Mixer """
+    """Class for Behringer XR-12 Mixer"""
+
     mixer_type: str = "XR12"
     num_channel: int = 12
     num_bus: int = 2
@@ -89,7 +93,8 @@ class MixerTypeXR12(MixerTypeXAir):
 
 
 class MixerTypeXR16(MixerTypeXAir):
-    """ Class for Behringer XR-16 Mixer """
+    """Class for Behringer XR-16 Mixer"""
+
     mixer_type: str = "XR16"
     num_channel: int = 16
     num_bus: int = 4
@@ -98,7 +103,7 @@ class MixerTypeXR16(MixerTypeXAir):
 
 
 class MixerTypeXR18(MixerTypeXAir):
-    """ Class for Behringer XR-18 Mixer """
+    """Class for Behringer XR-18 Mixer"""
 
     mixer_type: str = "XR18"
     num_channel: int = 16
@@ -117,7 +122,7 @@ _supported_mixers = [
 
 
 def make_mixer(mixer_type, **kwargs):
-    """ Make the actual mixer object based on the type """
+    """Make the actual mixer object based on the type"""
     if mixer_type in _supported_mixers:
         mixer_class_name = "MixerType" + mixer_type
         # module_ = importlib.import_module(".mixer_types", package="behringer_mixer")

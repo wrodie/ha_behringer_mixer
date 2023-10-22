@@ -4,7 +4,6 @@ from __future__ import annotations
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 
 from .const import DOMAIN
-from .coordinator import BlueprintDataUpdateCoordinator
 from .entity import BehringerMixerEntity
 
 
@@ -60,11 +59,9 @@ class BehringerMixerSwitch(BehringerMixerEntity, SwitchEntity):
         await self.coordinator.client.async_set_value(
             self.base_address + "/mix_on", True
         )
-        await self.coordinator.async_request_refresh()
 
     async def async_turn_off(self, **_: any) -> None:
         """Turn off the switch."""
         await self.coordinator.client.async_set_value(
             self.base_address + "/mix_on", False
         )
-        await self.coordinator.async_request_refresh()

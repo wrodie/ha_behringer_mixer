@@ -12,18 +12,7 @@ class BehringerMixerEntity(CoordinatorEntity):
     """BlueprintEntity class."""
 
     _attr_attribution = ATTRIBUTION
-
-    def __init2__(self, coordinator: BlueprintDataUpdateCoordinator) -> None:
-        """Initialize."""
-        super().__init__(coordinator)
-        self._attr_unique_id = coordinator.config_entry.entry_id
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, coordinator.config_entry.entry_id)},
-            name=f"Mixer - {coordinator.config_entry.data['MIXER_TYPE']} - {coordinator.config_entry.data['MIXER_IP']}",
-            model=VERSION,
-            manufacturer="Behringer",
-        )
-        self.base_address = ""
+    _attr_should_poll = False
 
     def __init__(
         self,

@@ -1,4 +1,3 @@
-import asyncio
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_message_builder import OscMessageBuilder
 from pythonosc.osc_server import AsyncIOOSCUDPServer
@@ -10,6 +9,7 @@ class OSCClientServer(AsyncIOOSCUDPServer):
         self.mixer_address = address
         self.event_loop = event_loop
         self.transport = None
+        self.protocol = None
 
     def send_message(self, address: str, vals):
         builder = OscMessageBuilder(address=address)
@@ -21,8 +21,9 @@ class OSCClientServer(AsyncIOOSCUDPServer):
         msg = builder.build()
         self.transport.sendto(msg.dgram, self.mixer_address)
 
-    def register_transport(self, transport):
+    def register_transport(self, transport, protocol):
         self.transport = transport
+        self.protocol = protocol
 
     def shutdown(self):
         self.transport.close()

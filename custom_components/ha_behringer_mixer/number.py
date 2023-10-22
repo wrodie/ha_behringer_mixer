@@ -4,7 +4,6 @@ from __future__ import annotations
 from homeassistant.components.number import NumberEntity, NumberEntityDescription
 
 from .const import DOMAIN
-from .coordinator import BlueprintDataUpdateCoordinator
 from .entity import BehringerMixerEntity
 
 
@@ -61,4 +60,4 @@ class BehringerMixerNumber(BehringerMixerEntity, NumberEntity):
         await self.coordinator.client.async_set_value(
             self.base_address + "/mix_fader", value
         )
-        await self.coordinator.async_request_refresh()
+        #await self.coordinator.async_request_refresh()

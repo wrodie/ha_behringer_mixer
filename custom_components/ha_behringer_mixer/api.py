@@ -1,6 +1,7 @@
 """Sample API Client."""
 from __future__ import annotations
 import logging
+import asyncio
 from .behringer_mixer import mixer_api
 
 
@@ -29,6 +30,8 @@ class BehringerMixerApiClient:
         self._num_matrix = 0
         self._num_dca = 0
         self._mixer = None
+        self.tasks = set()
+        self.coordinator = None
 
     async def setup(self):
         """Setup the server"""
@@ -37,20 +40,29 @@ class BehringerMixerApiClient:
             self._mixer_type, ip=self._mixer_ip, logLevel=logging.WARNING
         )
         await self._mixer.connectserver()
-        # await self._mixer.subscribe(self.new_data_callback)
+        # Get Initial state first
+        await self._mixer.reload()
+        # Setup subscription for live updates
+        task = asyncio.create_task(self._mixer.subscribe(self.new_data_callback))
+        self.tasks.add(task)
+        task.add_done_callback(self.tasks.discard)
+
         return True
 
     async def async_get_data(self) -> any:
         """Get data from the API."""
-        await self._mixer.reload()
         return self._mixer.state()
 
     async def async_set_value(self, address: str, value: str) -> any:
         """Set data"""
         return await self._mixer.set_value(address, value)
 
-    async def new_data_callback(self, data: dict):
+    def new_data_callback(self, data: dict):
         """Callback function to receive new data from the mixer"""
-        print("CB")
-        print(data)
+        if self.coordinator:
+            self.coordinator.async_update_listeners()
         return True
+
+    def register_coordinator(self, coordinator):
+        """ register the coordinator object """
+        self.coordinator = coordinator
