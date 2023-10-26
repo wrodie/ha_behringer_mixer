@@ -70,7 +70,6 @@ class MixerBase:
 
     def msg_handler(self, addr, *data):
         """Handle callback response"""
-        print(f"RCVD {addr} => {data}")
         self.logger.debug(f"received: {addr} {data if data else ''}")
         handling_subscriptions = bool(self._callback_function)
         updates = self._update_state(addr, data, handling_subscriptions)
@@ -127,6 +126,12 @@ class MixerBase:
     async def load_scene(self, scene_number):
         """Load a new scene on the mixer"""
         await self.send(self.cmd_scene_load, scene_number)
+        # Because of potential UDP buffer overruns (lots of messages are sent on
+        # a scene change), data may be lost
+        # therefore we need to wait for the scene change to finish
+        # and then update the state to make sure we have everything
+        await asyncio.sleep(1)
+        await self._load_initial()
 
     async def reload(self):
         """Reload state"""
@@ -183,7 +188,6 @@ class MixerBase:
                 # Therefore we want to ignore data
                 return updates
             self._state[state_key] = value
-            print(f"UPDATE {state_key} => {value}")
             updates.append({"property": state_key, "value": value})
             if state_key.endswith("_fader"):
                 db_val = fader_to_db(value)
