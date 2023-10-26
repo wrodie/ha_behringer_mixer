@@ -1,8 +1,6 @@
 """DataUpdateCoordinator for integration_blueprint."""
 from __future__ import annotations
 
-from datetime import timedelta
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import (
@@ -19,11 +17,11 @@ from .api import (
 from .const import DOMAIN, LOGGER
 
 
-# https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
-class BlueprintDataUpdateCoordinator(DataUpdateCoordinator):
+class MixerDataUpdateCoordinator(DataUpdateCoordinator):
     """Class to manage fetching data from the API."""
 
     config_entry: ConfigEntry
+    entity_catalog: {}
 
     def __init__(
         self,
@@ -37,10 +35,7 @@ class BlueprintDataUpdateCoordinator(DataUpdateCoordinator):
             logger=LOGGER,
             name=DOMAIN,
         )
-
-#    async def async_set_updated_data(self):
-#        print("SET UPDATED DATA")
-#        pass
+        self.entity_catalog = self.build_entity_catalog(self.client.mixer_info())
 
     async def _async_update_data(self):
         """Update data via library."""
@@ -51,3 +46,63 @@ class BlueprintDataUpdateCoordinator(DataUpdateCoordinator):
         except BehringerMixerApiClientError as exception:
             raise UpdateFailed(exception) from exception
 
+    def build_entity_catalog(self, mixer_info):
+        """build a list of entities"""
+        types = ["channel", "bus", "dca", "matrix"]
+        entities = {
+            "SENSOR": [],
+            "NUMBER": [],
+            "SWITCH": [],
+        }
+        self.fader_group(entities, "main", 0, "main/st")
+        for entity_type in types:
+            num_type = mixer_info.get(entity_type, {}).get("number")
+            base_key = mixer_info.get(entity_type, {}).get("base_address")
+            for index_number in range(1, num_type + 1):
+                self.fader_group(entities, entity_type, index_number, base_key)
+        entities["NUMBER"].append(
+            {
+                "type": "scene",
+                "key": f"{self.config_entry.entry_id}_scene_current",
+                "default_name": "Current Scene",
+                "base_address": "/scene/current",
+            }
+        )
+        return entities
+
+    def fader_group(self, entities, entity_type, index_number, base_key):
+        """generate entities for a fader"""
+        entity_part = entity_type
+        base_address = f"/{base_key}"
+        default_name = entity_type
+        if index_number:
+            entity_part = entity_type + "_" + str(index_number)
+            base_address = base_address + "/" + str(index_number)
+            default_name = default_name + " " + str(index_number or 0)
+        entities["SWITCH"].append(
+            {
+                "type": "on",
+                "key": f"{self.config_entry.entry_id}_{entity_part}_on",
+                "default_name": default_name,
+                "name_suffix": "On",
+                "base_address": base_address,
+            }
+        )
+        entities["NUMBER"].append(
+            {
+                "type": "fader",
+                "key": f"{self.config_entry.entry_id}_{entity_part}_fader",
+                "default_name": default_name,
+                "name_suffix": "Fader",
+                "base_address": base_address,
+            }
+        )
+        entities["SENSOR"].append(
+            {
+                "type": "faderdb",
+                "key": f"{self.config_entry.entry_id}_{entity_part}_fader_db",
+                "default_name": default_name,
+                "name_suffix": "Fader (dB)",
+                "base_address": base_address,
+            }
+        )

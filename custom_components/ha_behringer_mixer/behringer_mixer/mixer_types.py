@@ -1,6 +1,6 @@
 import importlib
 import sys
-from .MixerBase import MixerBase
+from .mixer_base import MixerBase
 
 
 class MixerTypeBase(MixerBase):
@@ -24,11 +24,11 @@ class MixerTypeBase(MixerBase):
         ["/bus/{num_bus}/mix/fader"],
         ["/bus/{num_bus}/mix/on"],
         ["/bus/{num_bus}/config/name"],
-        ["/mtx/{num_matrix}/mix/fader"],
-        ["/mtx/{num_matrix}/mix/on"],
-        ["/mtx/{num_matrix}/config/name"],
-        ["/dca/{num_dca}/fader"],
-        ["/dca/{num_dca}/on"],
+        ["/mtx/{num_matrix:2}/mix/fader"],
+        ["/mtx/{num_matrix:2}/mix/on"],
+        ["/mtx/{num_matrix:2}/config/name"],
+        ["/dca/{num_dca}/fader", "/dca/{num_dca}/mix/fader"],
+        ["/dca/{num_dca}/on", "/dca/{num_dca}/mix/on"],
         ["/dca/{num_dca}/config/name"],
         ["/main/st/mix/fader"],
         ["/main/st/mix/on"],
@@ -42,13 +42,34 @@ class MixerTypeBase(MixerBase):
     def info(self):
         """Return information about the mixer"""
         return {
-            "channel": self.num_channel,
-            "bus": self.num_bus,
-            "dca": self.num_dca,
-            "matrix": self.num_matrix,
-            "fx": self.num_fx,
-            "auxrtn": self.num_auxrtn,
-            "scenes": self.num_scenes,
+            "channel": {
+                "number": self.num_channel,
+                "base_address": "ch",
+            },
+            "bus": {
+                "number": self.num_bus,
+                "base_address": "bus",
+            },
+            "matrix": {
+                "number": self.num_matrix,
+                "base_address": "mtx",
+            },
+            "dca": {
+                "number": self.num_dca,
+                "base_address": "dca",
+            },
+            "fx": {
+                "number": self.num_fx,
+                "base_address": "fx",
+            },
+            "auxrtn": {
+                "number": self.num_auxrtn,
+                "base_address": "auxrtn",
+            },
+            "scenes": {
+                "number": self.num_scenes,
+                "base_address": "scene",
+            },
         }
 
 

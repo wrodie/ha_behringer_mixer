@@ -1,11 +1,11 @@
 """BlueprintEntity class."""
 from __future__ import annotations
 
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import ATTRIBUTION, DOMAIN, VERSION
-from .coordinator import BlueprintDataUpdateCoordinator
+from .coordinator import MixerDataUpdateCoordinator
 
 
 class BehringerMixerEntity(CoordinatorEntity):
@@ -16,15 +16,18 @@ class BehringerMixerEntity(CoordinatorEntity):
 
     def __init__(
         self,
-        coordinator: BlueprintDataUpdateCoordinator,
-        entity_description,
-        base_address: str,
+        coordinator: MixerDataUpdateCoordinator,
+        entity_description: EntityDescription,
+        entity_setup: dict,
     ) -> None:
         """Initialize the entity class."""
         super().__init__(coordinator)
-        self.base_address = base_address
-        self._attr_unique_id = entity_description.key
-        self._attr_entity_id = DOMAIN + "." + entity_description.key
+        self.base_address = entity_setup.get("base_address")
+        self.default_name = entity_setup.get("default_name")
+        self.name_suffix = entity_setup.get("name_suffix")
+        key = entity_setup.get("key")
+        self._attr_unique_id = key
+        self._attr_entity_id = DOMAIN + "." + key
         self.entity_id = self._attr_entity_id
         self.entity_description = entity_description
         self._attr_device_info = DeviceInfo(
@@ -34,7 +37,14 @@ class BehringerMixerEntity(CoordinatorEntity):
             manufacturer="Behringer",
         )
 
-    # @property
-    # def name(self) -> str | None:
-    #    """Name  of the entity."""
-    #    return self.coordinator.data.get(self.base_address + "/config_name", "")
+    @property
+    def name(self) -> str | None:
+        """Name  of the entity."""
+        return (
+            (
+                self.coordinator.data.get(self.base_address + "/config_name", "")
+                or self.default_name
+            )
+            + " "
+            + self.name_suffix
+        )

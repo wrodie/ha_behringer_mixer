@@ -1,13 +1,12 @@
+""" Base module for the mixer """
 import re
 import asyncio
 import logging
-import threading
-import time
+from typing import Optional
+from pythonosc.dispatcher import Dispatcher
 from .errors import MixerError
-from typing import Optional, Union
 from .utils import fader_to_db, db_to_fader
 from .mixer_osc import OSCClientServer
-from pythonosc.dispatcher import Dispatcher
 
 
 class MixerBase:
@@ -57,12 +56,7 @@ class MixerBase:
         """Return any OSC responses"""
         return self._info_response
 
-    async def connectserver(self):
-        """Connect to the server"""
-        await self.startup()
-        # asyncio.run(self.startup())
-
-    async def startup(self):
+    async def start(self):
         """Startup the server"""
         if not self.server:
             dispatcher = Dispatcher()
@@ -76,6 +70,7 @@ class MixerBase:
 
     def msg_handler(self, addr, *data):
         """Handle callback response"""
+        print(f"RCVD {addr} => {data}")
         self.logger.debug(f"received: {addr} {data if data else ''}")
         handling_subscriptions = bool(self._callback_function)
         updates = self._update_state(addr, data, handling_subscriptions)
@@ -98,11 +93,8 @@ class MixerBase:
         return self.info_response
 
     async def subscribe(self, callback_function):
+        """run the subscribe worker"""
         await self._subscribe_worker("/xremote", callback_function)
-
-    # async def _subscribe(self, parameter_string, callback_function):
-    #    self._subscribe_worker(parameter_string, callback_function)
-    #    return True
 
     async def _subscribe_worker(self, parameter_string, callback_function):
         self._callback_function = callback_function
@@ -116,11 +108,13 @@ class MixerBase:
         return True
 
     async def unsubscribe(self):
+        """Stop the subscription"""
         await self.send("/unsubscribe")
         self._callback_function = None
         return True
 
-    async def disconnect(self):
+    async def stop(self):
+        """Stop the OSC server"""
         await self.server.shutdown()
         return True
 
@@ -131,7 +125,7 @@ class MixerBase:
         return self._state
 
     async def load_scene(self, scene_number):
-        """Return current mixer state"""
+        """Load a new scene on the mixer"""
         await self.send(self.cmd_scene_load, scene_number)
 
     async def reload(self):
@@ -152,12 +146,14 @@ class MixerBase:
                 zfill_num = int(matches.group(3) or 0) or len(str(max_count))
                 for number in range(1, max_count + 1):
                     new_address = address.replace(
-                        "{" + match_var + "}", str(number).zfill(zfill_num)
+                        "{" + match_var + str(matches.group(2) or "") + "}",
+                        str(number).zfill(zfill_num),
                     )
                     expanded_addresses.append(new_address)
                     if rewrite_address:
                         new_rewrite_address = rewrite_address.replace(
-                            "{" + match_var + "}", str(number).zfill(zfill_num)
+                            "{" + match_var + str(matches.group(2) or "") + "}",
+                            str(number).zfill(zfill_num),
                         )
                         self._rewrites[new_address] = new_rewrite_address
             else:
@@ -179,7 +175,7 @@ class MixerBase:
         value = values[0]
         updates = []
         if state_key:
-            if state_key.endswith("_on"):
+            if state_key.endswith("_on") or state_key.endswith("/on"):
                 value = bool(value)
             state_key = re.sub(r"/0+(\d+)/", r"/\1/", state_key)
             if updates_only and state_key not in self._state:
@@ -187,6 +183,7 @@ class MixerBase:
                 # Therefore we want to ignore data
                 return updates
             self._state[state_key] = value
+            print(f"UPDATE {state_key} => {value}")
             updates.append({"property": state_key, "value": value})
             if state_key.endswith("_fader"):
                 db_val = fader_to_db(value)

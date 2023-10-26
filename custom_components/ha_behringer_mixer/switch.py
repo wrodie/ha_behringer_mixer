@@ -17,18 +17,15 @@ async def async_setup_entry(hass, entry, async_add_devices):
 def build_entities(coordinator):
     """Build up the entities"""
     entities = []
-    number_channels = 3  # coordinator.numberOfChannels
-    for index_number in range(1, number_channels + 1):
-        description = SwitchEntityDescription(
-            key=f"{coordinator.config_entry.entry_id}_channel_{index_number}_on",
-            name=f"Channel {index_number} On",
-            icon="mdi:volume-high",
-        )
+    for entity in coordinator.entity_catalog.get("SWITCH"):
         entities.append(
             BehringerMixerSwitch(
                 coordinator=coordinator,
-                entity_description=description,
-                base_address=f"/ch/{index_number}",
+                entity_description=SwitchEntityDescription(
+                    key=entity.get("key"),
+                    name=entity.get("default_name"),
+                ),
+                entity_setup=entity,
             )
         )
     return entities
@@ -37,10 +34,7 @@ def build_entities(coordinator):
 class BehringerMixerSwitch(BehringerMixerEntity, SwitchEntity):
     """behringer_mixer switch class."""
 
-    @property
-    def name(self) -> str | None:
-        """Name  of the entity."""
-        return self.coordinator.data.get(self.base_address + "/config_name", "")
+    _attr_icon = "mdi:volume-high"
 
     @property
     def icon(self) -> str | None:

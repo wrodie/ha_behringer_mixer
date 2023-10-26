@@ -17,38 +17,25 @@ async def async_setup_entry(hass, entry, async_add_devices):
 def build_entities(coordinator):
     """Build up the entities"""
     entities = []
-    number_channels = 3  # coordinator.SensorOfChannels
-    for index_number in range(1, number_channels + 1):
-        description = SensorEntityDescription(
-            key=f"{coordinator.config_entry.entry_id}_channel_{index_number}_fader_db",
-            name=f"Channel {index_number} Fader (dB)",
-            icon="mdi:volume-high",
-        )
+    for entity in coordinator.entity_catalog.get("SENSOR"):
         entities.append(
             BehringerMixerSensor(
                 coordinator=coordinator,
-                entity_description=description,
-                base_address=f"/ch/{index_number}",
+                entity_description=SensorEntityDescription(
+                    key=entity.get("key"),
+                    name=entity.get("default_name"),
+                ),
+                entity_setup=entity,
             )
         )
     return entities
-
 
 class BehringerMixerSensor(BehringerMixerEntity, SensorEntity):
     """behringer_mixer Sensor class."""
 
     _attr_device_class = "SensorDeviceClass.SOUND_PRESSURE"
     _attr_native_unit_of_measurement = "dB"
-
-
-    @property
-    def name(self) -> str | None:
-        """Name  of the entity."""
-        value = (
-            self.coordinator.data.get(self.base_address + "/config_name", "")
-            + " Fader dB"
-        )
-        return value
+    _attr_icon = "mdi:volume-source"
 
     @property
     def native_value(self) -> float | None:

@@ -25,29 +25,27 @@ class BehringerMixerApiClient:
         self._mixer_ip = mixer_ip
         self._mixer_type = mixer_type
         self._state = {}
-        self._num_channels = 0
-        self._num_bus = 0
-        self._num_matrix = 0
-        self._num_dca = 0
         self._mixer = None
         self.tasks = set()
         self.coordinator = None
 
     async def setup(self):
         """Setup the server"""
-        print(f"CONNECT {self._mixer_type} : {self._mixer_ip}")
         self._mixer = mixer_api.connect(
-            self._mixer_type, ip=self._mixer_ip, logLevel=logging.WARNING
+            self._mixer_type, ip=self._mixer_ip, logLevel=logging.WARNING, delay=0.002
         )
-        await self._mixer.connectserver()
+        await self._mixer.start()
         # Get Initial state first
         await self._mixer.reload()
         # Setup subscription for live updates
         task = asyncio.create_task(self._mixer.subscribe(self.new_data_callback))
         self.tasks.add(task)
         task.add_done_callback(self.tasks.discard)
-
         return True
+
+    def mixer_info(self):
+        """Return the mixer info"""
+        return self._mixer.info()
 
     async def async_get_data(self) -> any:
         """Get data from the API."""
@@ -57,12 +55,21 @@ class BehringerMixerApiClient:
         """Set data"""
         return await self._mixer.set_value(address, value)
 
-    def new_data_callback(self, data: dict):
+    async def load_scene(self, scene_number):
+        """Change the scene"""
+        return await self._mixer.load_scene(scene_number)
+
+    def new_data_callback(self, data: dict):  # pylint: disable=unused-argument
         """Callback function to receive new data from the mixer"""
         if self.coordinator:
             self.coordinator.async_update_listeners()
         return True
 
     def register_coordinator(self, coordinator):
-        """ register the coordinator object """
+        """register the coordinator object"""
         self.coordinator = coordinator
+
+    def stop(self):
+        """Shutdown the client"""
+        self._mixer.unsubscribe()
+        self._mixer.stop()

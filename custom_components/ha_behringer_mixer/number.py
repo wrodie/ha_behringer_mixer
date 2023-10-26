@@ -17,37 +17,58 @@ async def async_setup_entry(hass, entry, async_add_devices):
 def build_entities(coordinator):
     """Build up the entities"""
     entities = []
-    number_channels = 3  # coordinator.numberOfChannels
-    for index_number in range(1, number_channels + 1):
-        description = NumberEntityDescription(
-            key=f"{coordinator.config_entry.entry_id}_channel_{index_number}_fader",
-            name=f"Channel {index_number} Fader",
-            icon="mdi:volume-high",
-        )
-        entities.append(
-            BehringerMixerNumber(
-                coordinator=coordinator,
-                entity_description=description,
-                base_address=f"/ch/{index_number}",
+    for entity in coordinator.entity_catalog.get("NUMBER"):
+        if entity.get("type") == "scene":
+            entities.append(
+                BehringerMixerSceneNumber(
+                    coordinator=coordinator,
+                    entity_description=NumberEntityDescription(
+                        key=entity.get("key"),
+                        name=entity.get("default_name"),
+                    ),
+                    entity_setup=entity,
+                )
             )
-        )
+        else:
+            entities.append(
+                BehringerMixerFader(
+                    coordinator=coordinator,
+                    entity_description=NumberEntityDescription(
+                        key=entity.get("key"),
+                        name=entity.get("default_name"),
+                    ),
+                    entity_setup=entity,
+                )
+            )
     return entities
 
 
-class BehringerMixerNumber(BehringerMixerEntity, NumberEntity):
-    """behringer_mixer Number class."""
+class BehringerMixerSceneNumber(BehringerMixerEntity, NumberEntity):
+    """behringer_mixer Sensor class."""
 
-    _attr_native_max_value = 1
-    _attr_native_min_value = 0
+    _attr_mode = "box"
 
+    @property
+    def native_value(self) -> float | None:
+        """Value of the entity."""
+        return self.coordinator.data.get(self.base_address, "")
 
     @property
     def name(self) -> str | None:
         """Name  of the entity."""
-        value = (
-            self.coordinator.data.get(self.base_address + "/config_name", "") + " Fader"
-        )
-        return value
+        return self.default_name
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Update the current scene."""
+        await self.coordinator.client.load_scene(int(value))
+
+
+class BehringerMixerFader(BehringerMixerEntity, NumberEntity):
+    """behringer_mixer Number class."""
+
+    _attr_native_max_value = 1
+    _attr_native_min_value = 0
+    _attr_icon = "mdi:volume-source"
 
     @property
     def native_value(self) -> float | None:
@@ -60,4 +81,3 @@ class BehringerMixerNumber(BehringerMixerEntity, NumberEntity):
         await self.coordinator.client.async_set_value(
             self.base_address + "/mix_fader", value
         )
-        #await self.coordinator.async_request_refresh()

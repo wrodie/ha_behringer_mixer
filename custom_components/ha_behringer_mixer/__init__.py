@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant
 
 from .api import BehringerMixerApiClient
 from .const import DOMAIN
-from .coordinator import BlueprintDataUpdateCoordinator
+from .coordinator import MixerDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [
     Platform.SWITCH,
@@ -28,7 +28,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
     await client.setup()
 
-    hass.data[DOMAIN][entry.entry_id] = coordinator = BlueprintDataUpdateCoordinator(
+    hass.data[DOMAIN][entry.entry_id] = coordinator = MixerDataUpdateCoordinator(
         hass=hass,
         client=client,
     )
@@ -44,6 +44,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Handle removal of an entry."""
     if unloaded := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+        hass.data[DOMAIN][entry.entry_id].client.stop()
         hass.data[DOMAIN].pop(entry.entry_id)
     return unloaded
 
