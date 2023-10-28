@@ -10,5 +10,5 @@
   "integration_type": "device",
   "issue_tracker": "https://github.com/wrodie/ha_behringer_mixer/issues",
   "version": "0.0.0",
-  "requirements": []
+  "requirements": ["behringer-mixer"]
 }

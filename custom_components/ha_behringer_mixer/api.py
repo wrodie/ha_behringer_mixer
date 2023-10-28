@@ -2,7 +2,7 @@
 from __future__ import annotations
 import logging
 import asyncio
-from .behringer_mixer import mixer_api
+from behringer_mixer import mixer_api
 
 
 class BehringerMixerApiClientError(Exception):
@@ -31,7 +31,7 @@ class BehringerMixerApiClient:
 
     async def setup(self):
         """Setup the server"""
-        self._mixer = mixer_api.connect(
+        self._mixer = mixer_api.create(
             self._mixer_type, ip=self._mixer_ip, logLevel=logging.WARNING, delay=0.002
         )
         await self._mixer.start()
