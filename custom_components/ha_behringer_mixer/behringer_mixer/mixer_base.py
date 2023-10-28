@@ -43,13 +43,19 @@ class MixerBase:
         """Validate connection to the mixer"""
         await self.send("/xinfo")
         await asyncio.sleep(self._CONNECT_TIMEOUT)
+        print("IN VALCON")
         if not self.info_response:
-            raise MixerError(
+            self.logger.debug(
                 "Failed to setup OSC connection to mixer. Please check for correct ip address."
             )
-        print(
-            f"Successfully connected to {self.info_response[2]} at {self.info_response[0]}."
+            return False
+        self.logger.debug(
+            "Successfully connected to %s at %s.",
+            {self.info_response[2]},
+            {self.info_response[0]},
         )
+        print("IN VALCON - SUCCESS")
+        return True
 
     @property
     def info_response(self):
@@ -66,7 +72,7 @@ class MixerBase:
             )
             transport, protocol = await self.server.create_serve_endpoint()
             self.server.register_transport(transport, protocol)
-            await self.validate_connection()
+        return await self.validate_connection()
 
     def msg_handler(self, addr, *data):
         """Handle callback response"""

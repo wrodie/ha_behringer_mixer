@@ -30,6 +30,7 @@ def build_entities(coordinator):
         )
     return entities
 
+
 class BehringerMixerSensor(BehringerMixerEntity, SensorEntity):
     """behringer_mixer Sensor class."""
 
@@ -40,4 +41,4 @@ class BehringerMixerSensor(BehringerMixerEntity, SensorEntity):
     @property
     def native_value(self) -> float | None:
         """Value of the entity."""
-        return self.coordinator.data.get(self.base_address + "/mix_fader_db", "")
+        return self.coordinator.data.get(self.base_address + "/mix_fader_db", "") or -90

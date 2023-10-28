@@ -1,11 +1,7 @@
-"""Custom integration to integrate integration_blueprint with Home Assistant.
-
-For more details about this integration, please refer to
-https://github.com/ludeeus/integration_blueprint
-"""
+"""Custom integration to integrate a Behringer mixer into Home Assistant."""
 from __future__ import annotations
 
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
@@ -19,6 +15,7 @@ PLATFORMS: list[Platform] = [
     Platform.SENSOR,
 ]
 
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up this integration using UI."""
     hass.data.setdefault(DOMAIN, {})
@@ -26,7 +23,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     client = BehringerMixerApiClient(
         mixer_ip=entry.data["MIXER_IP"], mixer_type=entry.data["MIXER_TYPE"]
     )
-    await client.setup()
+    if not await client.setup():
+        raise ConfigEntryNotReady(
+            f"Timeout while connecting to {entry.data['MIXER_IP']}"
+        )
 
     hass.data[DOMAIN][entry.entry_id] = coordinator = MixerDataUpdateCoordinator(
         hass=hass,
@@ -37,6 +37,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+
+
 
     return True
 

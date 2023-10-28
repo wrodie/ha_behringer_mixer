@@ -23,6 +23,15 @@ Platform | Description
 
 ## Installation
 
+ACS installation (recommended)
+Install HACS. That way you get updates automatically.
+Add this Github repository as custom repository in HACS settings.
+search and install "Versatile Thermostat" in HACS and click install.
+Restart Home Assistant,
+Then you can add an Versatile Thermostat integration in the integration page. You add as many Versatile Thermostat that you need (typically one per heater that should be managed)
+
+Manual installation
+
 1. Using the tool of choice open the directory (folder) for your HA configuration (where you find `configuration.yaml`).
 1. If you do not have a `custom_components` directory (folder) there, you need to create it.
 1. In the `custom_components` directory (folder) create a new folder called `integration_blueprint`.
@@ -30,6 +39,10 @@ Platform | Description
 1. Place the files you downloaded in the new directory (folder) you created.
 1. Restart Home Assistant
 1. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Integration blueprint"
+
+H
+
+
 
 ## Configuration is done in the UI
 

@@ -141,7 +141,6 @@ _supported_mixers = [
     "XR12",
 ]
 
-
 def make_mixer(mixer_type, **kwargs):
     """Make the actual mixer object based on the type"""
     if mixer_type in _supported_mixers:
