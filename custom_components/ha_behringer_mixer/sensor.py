@@ -15,7 +15,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
 
 
 def build_entities(coordinator):
-    """Build up the entities"""
+    """Build up the entities."""
     entities = []
     for entity in coordinator.entity_catalog.get("SENSOR"):
         entities.append(
@@ -32,7 +32,7 @@ def build_entities(coordinator):
 
 
 class BehringerMixerSensor(BehringerMixerEntity, SensorEntity):
-    """behringer_mixer Sensor class."""
+    """Behringer_mixer Sensor class."""
 
     _attr_device_class = "SensorDeviceClass.SOUND_PRESSURE"
     _attr_native_unit_of_measurement = "dB"

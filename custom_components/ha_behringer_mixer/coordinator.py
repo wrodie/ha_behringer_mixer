@@ -1,4 +1,4 @@
-"""DataUpdateCoordinator for integration_blueprint."""
+"""DataUpdateCoordinator for Behringer Mixer Integration."""
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
@@ -47,7 +47,7 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
             raise UpdateFailed(exception) from exception
 
     def build_entity_catalog(self, mixer_info):
-        """build a list of entities"""
+        """Build a list of entities."""
         types = ["channel", "bus", "dca", "matrix"]
         entities = {
             "SENSOR": [],
@@ -71,7 +71,7 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
         return entities
 
     def fader_group(self, entities, entity_type, index_number, base_key):
-        """generate entities for a fader"""
+        """Generate entities for a fader."""
         entity_part = entity_type
         base_address = f"/{base_key}"
         default_name = entity_type

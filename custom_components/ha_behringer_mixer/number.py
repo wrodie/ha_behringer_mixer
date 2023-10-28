@@ -27,7 +27,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
 
 
 def build_entities(coordinator):
-    """Build up the entities"""
+    """Build up the entities."""
     entities = []
     for entity in coordinator.entity_catalog.get("NUMBER"):
         if entity.get("type") == "scene":
@@ -56,7 +56,7 @@ def build_entities(coordinator):
 
 
 class BehringerMixerSceneNumber(BehringerMixerEntity, NumberEntity):
-    """behringer_mixer Sensor class."""
+    """Behringer_mixer Scene Number class."""
 
     _attr_mode = "box"
 
@@ -76,7 +76,7 @@ class BehringerMixerSceneNumber(BehringerMixerEntity, NumberEntity):
 
 
 class BehringerMixerFader(BehringerMixerEntity, NumberEntity):
-    """behringer_mixer Number class."""
+    """Behringer_mixer Number class."""
 
     _attr_native_max_value = 1
     _attr_native_min_value = 0

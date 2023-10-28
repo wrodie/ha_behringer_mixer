@@ -15,7 +15,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
 
 
 def build_entities(coordinator):
-    """Build up the entities"""
+    """Build up the entities."""
     entities = []
     for entity in coordinator.entity_catalog.get("SWITCH"):
         entities.append(
@@ -32,7 +32,7 @@ def build_entities(coordinator):
 
 
 class BehringerMixerSwitch(BehringerMixerEntity, SwitchEntity):
-    """behringer_mixer switch class."""
+    """Behringer_mixer switch class."""
 
     _attr_icon = "mdi:volume-high"
 

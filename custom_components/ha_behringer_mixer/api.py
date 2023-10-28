@@ -1,4 +1,4 @@
-"""Sample API Client."""
+"""API Client. to connect to Behringer mixer."""
 from __future__ import annotations
 import logging
 import asyncio
@@ -18,10 +18,10 @@ class BehringerMixerApiClientAuthenticationError(BehringerMixerApiClientError):
 
 
 class BehringerMixerApiClient:
-    """Sample API Client."""
+    """Behringer Mixer API Client."""
 
     def __init__(self, mixer_ip: str, mixer_type: str) -> None:
-        """Sample API Client."""
+        """Initialise the API Client."""
         self._mixer_ip = mixer_ip
         self._mixer_type = mixer_type
         self._state = {}
@@ -30,7 +30,7 @@ class BehringerMixerApiClient:
         self.coordinator = None
 
     async def setup(self):
-        """Setup the server"""
+        """Set up everything necessary."""
         self._mixer = mixer_api.create(
             self._mixer_type, ip=self._mixer_ip, logLevel=logging.WARNING, delay=0.002
         )
@@ -44,7 +44,7 @@ class BehringerMixerApiClient:
         return True
 
     def mixer_info(self):
-        """Return the mixer info"""
+        """Return the mixer info."""
         return self._mixer.info()
 
     async def async_get_data(self) -> any:
@@ -52,24 +52,24 @@ class BehringerMixerApiClient:
         return self._mixer.state()
 
     async def async_set_value(self, address: str, value: str) -> any:
-        """Set data"""
+        """Set a specific value on the mixer."""
         return await self._mixer.set_value(address, value)
 
     async def load_scene(self, scene_number):
-        """Change the scene"""
+        """Change the scene."""
         return await self._mixer.load_scene(scene_number)
 
     def new_data_callback(self, data: dict):  # pylint: disable=unused-argument
-        """Callback function to receive new data from the mixer"""
+        """Callback function that receives new data from the mixer."""
         if self.coordinator:
             self.coordinator.async_update_listeners()
         return True
 
     def register_coordinator(self, coordinator):
-        """register the coordinator object"""
+        """Register the coordinator object."""
         self.coordinator = coordinator
 
     def stop(self):
-        """Shutdown the client"""
+        """Shutdown the client."""
         self._mixer.unsubscribe()
         self._mixer.stop()
