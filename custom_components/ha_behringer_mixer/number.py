@@ -18,7 +18,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
 
     # Register service to change scenes
     # platform = entity_platform.async_get_current_platform()
-    # platform.async_register_entity_service(
+    # platform.async_register_entity_sAAervice(
     #    "SERVICE_CHANGE_SCENE",
     #    {
     #        vol.Required("scene_number"): cv.Number,
