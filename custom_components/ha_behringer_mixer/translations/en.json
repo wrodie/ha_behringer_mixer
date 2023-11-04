@@ -2,10 +2,10 @@
     "config": {
         "step": {
             "user": {
-                "description": "If you need help with the configuration have a look here: https://github.com/ludeeus/integration_blueprint",
+                "description": "If you need help with the configuration have a look here: https://github.com/wrodie/ha_behringer_mixer",
                 "data": {
-                    "username": "Username",
-                    "password": "Password"
+                    "MIXER_IP": "Mixer IP Address",
+                    "MIXER_TYPE": "Mixer Type eg X32, XR12"
                 }
             }
         },
@@ -15,4 +15,5 @@
             "unknown": "Unknown error occurred."
         }
     }
+
 }

@@ -3,7 +3,7 @@ from logging import Logger, getLogger
 
 LOGGER: Logger = getLogger(__package__)
 
-NAME = "Integration blueprint"
-DOMAIN = "integration_blueprint"
-VERSION = "0.0.0"
+NAME = "Behringer Mixer"
+DOMAIN = "ha_behringer_mixer"
+VERSION = "0.0.1"
 ATTRIBUTION = "Data provided by http://jsonplaceholder.typicode.com/"
