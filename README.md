@@ -37,14 +37,15 @@ The data for the mixer is updated in real time, so each time a button is pressed
 
 ## Installation
 
-HACS installation (recommended)
-- Install HACS. That way you get updates automatically.
-- Add this Github repository as custom repository in HACS settings.
-- Aearch and install "Behringer Mixer" in HACS and click install.
-- Restart Home Assistant,
-- Then you can add a Behringer Mixer integration in the integration page.
+**HACS installation (recommended)**
 
-Manual installation
+1. Install HACS. That way you get updates automatically.
+1. Add this Github repository as custom repository in HACS settings.
+1. Aearch and install "Behringer Mixer" in HACS and click install.
+1. Restart Home Assistant,
+1. Then you can add a Behringer Mixer integration in the integration page.
+
+**Manual installation**
 
 1. Using the tool of choice open the directory (folder) for your HA configuration (where you find `configuration.yaml`).
 1. If you do not have a `custom_components` directory (folder) there, you need to create it.
