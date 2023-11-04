@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 from homeassistant.components.number import NumberEntity, NumberEntityDescription
-from homeassistant.helpers import config_validation as cv, entity_platform
-import voluptuous as vol
+#from homeassistant.helpers import config_validation as cv, entity_platform
+#import voluptuous as vol
 
 from .const import DOMAIN
 from .entity import BehringerMixerEntity
@@ -16,14 +16,14 @@ async def async_setup_entry(hass, entry, async_add_devices):
     async_add_devices(devices_list)
 
     # Register service to change scenes
-    platform = entity_platform.async_get_current_platform()
-    platform.async_register_entity_service(
-        "SERVICE_CHANGE_SCENE",
-        {
-            vol.Required("scene_number"): cv.Number,
-        },
-        "change_scene",
-    )
+    # platform = entity_platform.async_get_current_platform()
+    # platform.async_register_entity_service(
+    #    "SERVICE_CHANGE_SCENE",
+    #    {
+    #        vol.Required("scene_number"): cv.Number,
+    #    },
+    #    "change_scene",
+    # )
 
 
 def build_entities(coordinator):
