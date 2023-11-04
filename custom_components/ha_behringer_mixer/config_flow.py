@@ -55,7 +55,9 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                             type=selector.TextSelectorType.TEXT
                         ),
                     ),
-                    vol.Required("MIXER_TYPE", default="X32"): vol.In(["X32", "XR12", "XR16", "XR18"]),
+                    vol.Required("MIXER_TYPE", default="X32"): vol.In(
+                        ["X32", "XR12", "XR16", "XR18"]
+                    ),
                 }
             ),
             errors=_errors,
@@ -64,4 +66,6 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def _test_connect(self, mixer_ip: str, mixer_type: str) -> None:
         """Validate credentials."""
         client = BehringerMixerApiClient(mixer_ip=mixer_ip, mixer_type=mixer_type)
+        await client.setup()
         await client.async_get_data()
+        client.stop()
