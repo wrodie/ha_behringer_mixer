@@ -5,7 +5,6 @@
 [![License][license-shield]](LICENSE)
 
 [![hacs][hacsbadge]][hacs]
-![Project Maintenance][maintenance-shield]
 
 
 This integration allows you to connect a Behringer Digital Mixer to Home Assistant.
@@ -34,7 +33,6 @@ The data for the mixer is updated in real time, so each time a button is pressed
 
 
 
-
 ## Installation
 
 **HACS installation (recommended)**
@@ -56,7 +54,6 @@ The data for the mixer is updated in real time, so each time a button is pressed
 1. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Behringer Mixer"
 
 
-
 ## Configuration is done in the UI
 
 <!---->
@@ -76,8 +73,11 @@ If you want to contribute to this please read the [Contribution guidelines](CONT
 ***
 
 
+[commits-shield]: https://img.shields.io/github/commit-activity/y/wrodie/ha_behringer_mixer.svg?style=for-the-badge
 [commits]: https://github.com/wrodie/ha_behringer_mixer/commits/main
 [hacs]: https://github.com/hacs/integration
 [hacsbadge]: https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge
 [releases-shield]: https://img.shields.io/github/release/wrodie/ha_behringer_mixer.svg?style=for-the-badge
 [releases]: https://github.com/wrodie/ha_behringer_mixer/releases
+[integration_blueprint]: https://github.com/ludeeus/integration_blueprint
+[license-shield]: https://img.shields.io/github/license/ludeeus/integration_blueprint.svg?style=for-the-badge

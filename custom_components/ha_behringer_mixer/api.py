@@ -60,7 +60,7 @@ class BehringerMixerApiClient:
         return await self._mixer.load_scene(scene_number)
 
     def new_data_callback(self, data: dict):  # pylint: disable=unused-argument
-        """Callback function that receives new data from the mixer."""
+        """Handle the callback indicating new data has been received."""
         if self.coordinator:
             self.coordinator.async_update_listeners()
         return True
