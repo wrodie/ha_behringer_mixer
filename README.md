@@ -58,7 +58,7 @@ The data for the mixer is updated in real time, so each time a button is pressed
 
 <!---->
 
-# Caveats
+## Caveats
 Connection to the mixer is performed via ip address using UDP. If the IP address for the mixer changes, you will need to edit the integration setup. To avoid this, set up a DHCP reservation on your router for your mixer so that it always has the same IP address.
 
 This information on changes to the mixer is written to the HA history/recorder databases so this may result in lots of state being stored if the mixer changes a lot.  You may want to consider excluding these entities from storing history.

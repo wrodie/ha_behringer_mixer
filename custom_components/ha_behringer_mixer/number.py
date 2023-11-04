@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 from homeassistant.components.number import NumberEntity, NumberEntityDescription
-#from homeassistant.helpers import config_validation as cv, entity_platform
-#import voluptuous as vol
+
+# from homeassistant.helpers import config_validation as cv, entity_platform
+# import voluptuous as vol
 
 from .const import DOMAIN
 from .entity import BehringerMixerEntity
