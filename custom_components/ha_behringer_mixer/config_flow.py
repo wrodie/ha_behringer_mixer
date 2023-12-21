@@ -27,7 +27,7 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         _errors = {}
         if user_input is not None:
             try:
-                await self._test_connect(
+                user_input["NAME_DEFAULT"] = await self._test_connect(
                     mixer_ip=user_input["MIXER_IP"],
                     mixer_type=user_input["MIXER_TYPE"],
                 )
@@ -41,10 +41,8 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 LOGGER.exception(exception)
                 _errors["base"] = "unknown"
             else:
-                return self.async_create_entry(
-                    title=user_input["MIXER_IP"],
-                    data=user_input,
-                )
+                self.init_info = user_input
+                return await self.async_step_name(user_input)
 
         return self.async_show_form(
             step_id="user",
@@ -63,9 +61,39 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             errors=_errors,
         )
 
+    async def async_step_name(
+        self,
+        user_input: dict | None = None,
+    ) -> config_entries.FlowResult:
+        """Handle a flow initialized by the user."""
+        _errors = {}
+        if user_input is not None and user_input.get("NAME"):
+            self.init_info["NAME"] = user_input["NAME"]
+            return self.async_create_entry(
+                title=self.init_info["NAME"],
+                data=self.init_info,
+            )
+
+        return self.async_show_form(
+            step_id="name",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        "NAME", default=user_input.get("NAME_DEFAULT")
+                    ): selector.TextSelector(
+                        selector.TextSelectorConfig(
+                            type=selector.TextSelectorType.TEXT
+                        ),
+                    ),
+                }
+            ),
+            errors=_errors,
+        )
+
     async def _test_connect(self, mixer_ip: str, mixer_type: str) -> None:
         """Validate credentials."""
         client = BehringerMixerApiClient(mixer_ip=mixer_ip, mixer_type=mixer_type)
-        await client.setup()
+        await client.setup(setup_callbacks=False)
         await client.async_get_data()
-        client.stop()
+        await client.stop()
+        return client.mixer_network_name()

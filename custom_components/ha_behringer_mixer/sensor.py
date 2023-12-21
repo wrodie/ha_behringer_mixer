@@ -18,20 +18,45 @@ def build_entities(coordinator):
     """Build up the entities."""
     entities = []
     for entity in coordinator.entity_catalog.get("SENSOR"):
-        entities.append(
-            BehringerMixerSensor(
-                coordinator=coordinator,
-                entity_description=SensorEntityDescription(
-                    key=entity.get("key"),
-                    name=entity.get("default_name"),
-                ),
-                entity_setup=entity,
+        if entity.get("type") == "faderdb":
+            entities.append(
+                BehringerMixerDbSensor(
+                    coordinator=coordinator,
+                    entity_description=SensorEntityDescription(
+                        key=entity.get("key"),
+                        name=entity.get("default_name"),
+                    ),
+                    entity_setup=entity,
+                )
             )
-        )
+        else:
+            entities.append(
+                BehringerMixerGenericSensor(
+                    coordinator=coordinator,
+                    entity_description=SensorEntityDescription(
+                        key=entity.get("key"), name=entity.get("default_name")
+                    ),
+                    entity_setup=entity,
+                )
+            )
     return entities
 
 
-class BehringerMixerSensor(BehringerMixerEntity, SensorEntity):
+class BehringerMixerGenericSensor(BehringerMixerEntity, SensorEntity):
+    """Behringer_mixer Generic Sensor class."""
+
+    @property
+    def name(self) -> str | None:
+        """Name  of the entity."""
+        return self.default_name
+
+    @property
+    def native_value(self) -> float | None:
+        """Value of the entity."""
+        return self.coordinator.data.get(self.base_address, "")
+
+
+class BehringerMixerDbSensor(BehringerMixerEntity, SensorEntity):
     """Behringer_mixer Sensor class."""
 
     _attr_device_class = "SensorDeviceClass.SOUND_PRESSURE"

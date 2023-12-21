@@ -48,3 +48,8 @@ class BehringerMixerEntity(CoordinatorEntity):
             + " "
             + self.name_suffix
         )
+
+    @property
+    def available(self) -> bool:
+        """Return True if the mixer is available."""
+        return self.coordinator.sub_connected

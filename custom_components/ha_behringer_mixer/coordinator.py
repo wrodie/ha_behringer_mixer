@@ -35,6 +35,8 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
             logger=LOGGER,
             name=DOMAIN,
         )
+        self.sub_connected = False
+        self.entity_base_id = self.config_entry.data["NAME"]
         self.entity_catalog = self.build_entity_catalog(self.client.mixer_info())
 
     async def _async_update_data(self):
@@ -48,7 +50,7 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
 
     def build_entity_catalog(self, mixer_info):
         """Build a list of entities."""
-        types = ["channel", "bus", "dca", "matrix"]
+        types = ["channel", "bus", "dca", "matrix", "auxin"]
         entities = {
             "SENSOR": [],
             "NUMBER": [],
@@ -63,9 +65,17 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
         entities["NUMBER"].append(
             {
                 "type": "scene",
-                "key": f"{self.config_entry.entry_id}_scene_current",
+                "key": f"{self.entity_base_id}_scene_current",
                 "default_name": "Current Scene",
                 "base_address": "/scene/current",
+            }
+        )
+        entities["SENSOR"].append(
+            {
+                "type": "generic",
+                "key": f"{self.entity_base_id}_firmware",
+                "default_name": "Firmware Version",
+                "base_address": "/firmware",
             }
         )
         return entities
@@ -82,7 +92,7 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
         entities["SWITCH"].append(
             {
                 "type": "on",
-                "key": f"{self.config_entry.entry_id}_{entity_part}_on",
+                "key": f"{self.entity_base_id}_{entity_part}_on",
                 "default_name": default_name,
                 "name_suffix": "On",
                 "base_address": base_address,
@@ -91,7 +101,7 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
         entities["NUMBER"].append(
             {
                 "type": "fader",
-                "key": f"{self.config_entry.entry_id}_{entity_part}_fader",
+                "key": f"{self.entity_base_id}_{entity_part}_fader",
                 "default_name": default_name,
                 "name_suffix": "Fader",
                 "base_address": base_address,
@@ -100,7 +110,7 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
         entities["SENSOR"].append(
             {
                 "type": "faderdb",
-                "key": f"{self.config_entry.entry_id}_{entity_part}_fader_db",
+                "key": f"{self.entity_base_id}_{entity_part}_fader_db",
                 "default_name": default_name,
                 "name_suffix": "Fader (dB)",
                 "base_address": base_address,

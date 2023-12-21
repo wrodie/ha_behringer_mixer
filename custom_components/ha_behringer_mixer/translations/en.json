@@ -7,6 +7,12 @@
                     "MIXER_IP": "Mixer IP Address",
                     "MIXER_TYPE": "Mixer Type eg X32, XR12"
                 }
+            },
+            "name": {
+                "description": "What do you want to call this mixer?",
+                "data": {
+                    "NAME": "Mixer Name"
+                }
             }
         },
         "error": {
