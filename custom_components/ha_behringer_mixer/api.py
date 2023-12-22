@@ -29,7 +29,7 @@ class BehringerMixerApiClient:
         self.tasks = set()
         self.coordinator = None
 
-    async def setup(self):
+    async def setup(self, setup_callbacks=True):
         """Set up everything necessary."""
         self._mixer = mixer_api.create(
             self._mixer_type, ip=self._mixer_ip, logLevel=logging.WARNING, delay=0.002
@@ -37,19 +37,38 @@ class BehringerMixerApiClient:
         await self._mixer.start()
         # Get Initial state first
         await self._mixer.reload()
-        # Setup subscription for live updates
-        task = asyncio.create_task(self._mixer.subscribe(self.new_data_callback))
-        self.tasks.add(task)
-        task.add_done_callback(self.tasks.discard)
+        if setup_callbacks:
+            # Setup subscription for live updates
+            task = asyncio.create_task(self._mixer.subscribe(self.new_data_callback))
+            self.tasks.add(task)
+            task.add_done_callback(self.tasks.discard)
+            task_sub_status = asyncio.create_task(
+                self._mixer.subscription_status_register(
+                    self.subscription_status_callback
+                )
+            )
+            self.tasks.add(task_sub_status)
+            task_sub_status.add_done_callback(self.tasks.discard)
         return True
 
     def mixer_info(self):
         """Return the mixer info."""
         return self._mixer.info()
 
+    def mixer_network_name(self):
+        """Return the mixer network_name."""
+        return self._mixer.name()
+
     async def async_get_data(self) -> any:
         """Get data from the API."""
-        return self._mixer.state()
+        return self._get_data()
+
+    def _get_data(self) -> any:
+        """Process the internal data from the API."""
+        data = self._mixer.state()
+        data["/firmware"] = self._mixer.firmware()
+        data["/available"] = self._mixer.subscription_connected()
+        return data
 
     async def async_set_value(self, address: str, value: str) -> any:
         """Set a specific value on the mixer."""
@@ -62,14 +81,21 @@ class BehringerMixerApiClient:
     def new_data_callback(self, data: dict):  # pylint: disable=unused-argument
         """Handle the callback indicating new data has been received."""
         if self.coordinator:
-            self.coordinator.async_update_listeners()
+            self.coordinator.async_set_updated_data(self._get_data())
+        return True
+
+    def subscription_status_callback(self, subscription_connection):
+        """Handle the callback indicating the status of the subscription connection."""
+        if self.coordinator:
+            self.coordinator.sub_connected = subscription_connection
+        self.new_data_callback({})
         return True
 
     def register_coordinator(self, coordinator):
         """Register the coordinator object."""
         self.coordinator = coordinator
 
-    def stop(self):
+    async def stop(self):
         """Shutdown the client."""
-        self._mixer.unsubscribe()
-        self._mixer.stop()
+        await self._mixer.unsubscribe()
+        await self._mixer.stop()

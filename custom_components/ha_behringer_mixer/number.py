@@ -16,16 +16,6 @@ async def async_setup_entry(hass, entry, async_add_devices):
     devices_list = build_entities(coordinator)
     async_add_devices(devices_list)
 
-    # Register service to change scenes
-    # platform = entity_platform.async_get_current_platform()
-    # platform.async_register_entity_sAAervice(
-    #    "SERVICE_CHANGE_SCENE",
-    #    {
-    #        vol.Required("scene_number"): cv.Number,
-    #    },
-    #    "change_scene",
-    # )
-
 
 def build_entities(coordinator):
     """Build up the entities."""

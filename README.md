@@ -15,11 +15,11 @@ This integration allows you to connect a Behringer Digital Mixer to Home Assista
 - XR16
 - XR18
 
-*Testing has been mostly on the X32*
+*Testing has been mostly on the X32, but has been physically tested agains X32 and XR18*
 
 For each mixer configured by this integration entities for the following are provided.:
 
-For each Channel, Bus, DCA, Matrix, and Main Faders
+For each Channel, Bus, DCA, Matrix, AuxIn and Main Faders
  - Name (Read only)
  - Mute (SWITCH) (Read/Write)
  - Fader (NUMBER) (Read/Write)
@@ -27,6 +27,7 @@ For each Channel, Bus, DCA, Matrix, and Main Faders
 
 In addition to these 'fader' related variables, also provided is
  - Current scene/snapshot number/index (Read/Write)
+ - Firmware (Read only)
 
 ## Data Updates
 The data for the mixer is updated in real time, so each time a button is pressed or fader is moved on the mixer, this is updated in Home Assistant immediately.
@@ -57,6 +58,10 @@ The data for the mixer is updated in real time, so each time a button is pressed
 ## Configuration is done in the UI
 
 <!---->
+- You are asked for the ip address/hostname
+- You are asked for the type of mixer (choose from the list)
+- You are asked for the name of the mixer
+
 
 ## Caveats
 Connection to the mixer is performed via ip address using UDP. If the IP address for the mixer changes, you will need to edit the integration setup. To avoid this, set up a DHCP reservation on your router for your mixer so that it always has the same IP address.
