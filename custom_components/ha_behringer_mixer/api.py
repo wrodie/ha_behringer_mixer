@@ -64,7 +64,7 @@ class BehringerMixerApiClient:
         return self._get_data()
 
     def _get_data(self) -> any:
-        """Internal function to get data from the API."""
+        """Process the internal data from the API."""
         data = self._mixer.state()
         data["/firmware"] = self._mixer.firmware()
         data["/available"] = self._mixer.subscription_connected()
