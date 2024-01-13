@@ -56,11 +56,12 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
             "NUMBER": [],
             "SWITCH": [],
         }
-        self.fader_group(entities, "main", 0, "main/st")
+        if self.config_entry.data.get("MAIN_CONFIG"):
+            self.fader_group(entities, "main", 0, "main/st")
         for entity_type in types:
-            num_type = mixer_info.get(entity_type, {}).get("number")
+            # num_type = mixer_info.get(entity_type, {}).get("number")
             base_key = mixer_info.get(entity_type, {}).get("base_address")
-            for index_number in range(1, num_type + 1):
+            for index_number in self.config_entry.data[entity_type.upper() + "_CONFIG"]:
                 self.fader_group(entities, entity_type, index_number, base_key)
         entities["NUMBER"].append(
             {

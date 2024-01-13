@@ -61,6 +61,7 @@ The data for the mixer is updated in real time, so each time a button is pressed
 - You are asked for the ip address/hostname
 - You are asked for the type of mixer (choose from the list)
 - You are asked for the name of the mixer
+- You can choose which channels/busses/dcas etc to actually import (If you import everything there can be a lot)
 
 
 ## Caveats

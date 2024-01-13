@@ -11,7 +11,13 @@
             "name": {
                 "description": "What do you want to call this mixer?",
                 "data": {
-                    "NAME": "Mixer Name"
+                    "NAME": "Mixer Name",
+                    "CHANNELS": "Channels to import",
+                    "BUSSES": "Busses to import",
+                    "MATRICES": "Matrices to import",
+                    "AUXINS": "Aux ins to import",
+                    "DCAS": "DCAs to import",
+                    "MAIN": "Do you want to import the Main/LR Fader?"
                 }
             }
         },
