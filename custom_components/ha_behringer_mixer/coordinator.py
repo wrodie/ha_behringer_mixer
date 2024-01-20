@@ -56,12 +56,41 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
             "NUMBER": [],
             "SWITCH": [],
         }
-        self.fader_group(entities, "main", 0, "main/st")
+        if self.config_entry.data.get("MAIN_CONFIG"):
+            self.fader_group(entities, "main", 0, "main/st")
+        # Input channels
         for entity_type in types:
-            num_type = mixer_info.get(entity_type, {}).get("number")
+            # num_type = mixer_info.get(entity_type, {}).get("number")
             base_key = mixer_info.get(entity_type, {}).get("base_address")
-            for index_number in range(1, num_type + 1):
+            for index_number in self.config_entry.data[entity_type.upper() + "_CONFIG"]:
                 self.fader_group(entities, entity_type, index_number, base_key)
+        # Channel to bus sends
+        if self.config_entry.data.get("CHANNELSENDS_CONFIG"):
+            base_key = mixer_info.get("channel_sends", {}).get("base_address")
+            for channel_number in self.config_entry.data["CHANNEL_CONFIG"]:
+                for bus_number in self.config_entry.data["BUS_CONFIG"]:
+                    self.fader_group(
+                        entities,
+                        "chsend",
+                        f"{channel_number}/{bus_number}",
+                        base_key,
+                        f"channel {channel_number} -> bus {bus_number}",
+                    )
+
+        # Bus to matrix sends
+        num_matrix = mixer_info.get("matrix", {}).get("number")
+        if num_matrix and self.config_entry.data.get("BUSSENDS_CONFIG"):
+            base_key = mixer_info.get("bus_sends", {}).get("base_address")
+            for bus_number in self.config_entry.data["BUS_CONFIG"]:
+                for matrix_number in self.config_entry.data["MATRIX_CONFIG"]:
+                    self.fader_group(
+                        entities,
+                        "bussend",
+                        f"{bus_number}/{matrix_number}",
+                        base_key,
+                        f"bus {bus_number} -> matrix {matrix_number}",
+                    )
+
         entities["NUMBER"].append(
             {
                 "type": "scene",
@@ -80,7 +109,7 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
         )
         return entities
 
-    def fader_group(self, entities, entity_type, index_number, base_key):
+    def fader_group(self, entities, entity_type, index_number, base_key, name=""):
         """Generate entities for a fader."""
         entity_part = entity_type
         base_address = f"/{base_key}"
@@ -89,6 +118,7 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
             entity_part = entity_type + "_" + str(index_number)
             base_address = base_address + "/" + str(index_number)
             default_name = default_name + " " + str(index_number or 0)
+        default_name = name or default_name
         entities["SWITCH"].append(
             {
                 "type": "on",

@@ -4,7 +4,6 @@ import logging
 import asyncio
 from behringer_mixer import mixer_api
 
-
 class BehringerMixerApiClientError(Exception):
     """Exception to indicate a general API error."""
 
@@ -29,15 +28,15 @@ class BehringerMixerApiClient:
         self.tasks = set()
         self.coordinator = None
 
-    async def setup(self, setup_callbacks=True):
+    async def setup(self, test_connection_only=False):
         """Set up everything necessary."""
         self._mixer = mixer_api.create(
             self._mixer_type, ip=self._mixer_ip, logLevel=logging.WARNING, delay=0.002
         )
         await self._mixer.start()
-        # Get Initial state first
-        await self._mixer.reload()
-        if setup_callbacks:
+        if not test_connection_only:
+            # Get Initial state first
+            await self._mixer.reload()
             # Setup subscription for live updates
             task = asyncio.create_task(self._mixer.subscribe(self.new_data_callback))
             self.tasks.add(task)
