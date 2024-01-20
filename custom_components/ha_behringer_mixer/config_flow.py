@@ -64,7 +64,7 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     def create_list(max_number):
-        """ Create a list of numbers """
+        """Create a list of numbers."""
         return list(range(1, max_number + 1))
 
     async def async_step_name(
