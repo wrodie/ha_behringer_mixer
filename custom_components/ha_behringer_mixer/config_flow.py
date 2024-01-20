@@ -81,6 +81,8 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             self.init_info["MATRIX_CONFIG"] = user_input["MATRICES"]
             self.init_info["AUXIN_CONFIG"] = user_input["AUXINS"]
             self.init_info["MAIN_CONFIG"] = user_input["MAIN"] or False
+            self.init_info["CHANNELSENDS_CONFIG"] = user_input["CHANNELSENDS"] or False
+            self.init_info["BUSSENDS_CONFIG"] = user_input["BUSSENDS"] or False
             return self.async_create_entry(
                 title=self.init_info["NAME"],
                 data=self.init_info,
@@ -123,6 +125,8 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                         auxin_options
                     ),
                     vol.Optional("MAIN", default=True): cv.boolean,
+                    vol.Optional("CHANNELSENDS", default=False): cv.boolean,
+                    vol.Optional("BUSSENDS", default=False): cv.boolean,
                 }
             ),
             errors=_errors,
@@ -131,15 +135,17 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def _test_connect(self, mixer_ip: str, mixer_type: str) -> None:
         """Validate IP/Type."""
         client = BehringerMixerApiClient(mixer_ip=mixer_ip, mixer_type=mixer_type)
-        await client.setup(setup_callbacks=False)
+        await client.setup(test_connection_only=True)
         await client.async_get_data()
         await client.stop()
+        if not client.mixer_network_name():
+            raise BehringerMixerApiClientCommunicationError
         return client.mixer_network_name()
 
     async def _mixer_info(self, mixer_ip: str, mixer_type: str) -> None:
         """Load Mixer Information."""
         client = BehringerMixerApiClient(mixer_ip=mixer_ip, mixer_type=mixer_type)
-        await client.setup(setup_callbacks=False)
+        await client.setup(test_connection_only=True)
         await client.async_get_data()
         await client.stop()
         return client.mixer_info()
