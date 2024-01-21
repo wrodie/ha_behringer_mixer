@@ -62,13 +62,14 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
         for entity_type in types:
             # num_type = mixer_info.get(entity_type, {}).get("number")
             base_key = mixer_info.get(entity_type, {}).get("base_address")
-            for index_number in self.config_entry.data[entity_type.upper() + "_CONFIG"]:
+            config_key = entity_type.upper() + "_CONFIG"
+            for index_number in self.config_entry.data.get(config_key, []):
                 self.fader_group(entities, entity_type, index_number, base_key)
         # Channel to bus sends
         if self.config_entry.data.get("CHANNELSENDS_CONFIG"):
             base_key = mixer_info.get("channel_sends", {}).get("base_address")
-            for channel_number in self.config_entry.data["CHANNEL_CONFIG"]:
-                for bus_number in self.config_entry.data["BUS_CONFIG"]:
+            for channel_number in self.config_entry.data.get("CHANNEL_CONFIG", []):
+                for bus_number in self.config_entry.data.get("BUS_CONFIG", []):
                     self.fader_group(
                         entities,
                         "chsend",

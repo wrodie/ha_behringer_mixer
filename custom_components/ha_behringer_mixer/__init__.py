@@ -6,7 +6,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
 from .api import BehringerMixerApiClient
-from .const import DOMAIN
+from .const import DOMAIN, LOGGER
 from .coordinator import MixerDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [
@@ -53,3 +53,30 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload config entry."""
     await async_unload_entry(hass, entry)
     await async_setup_entry(hass, entry)
+
+
+async def async_migrate_entry(hass, config_entry: ConfigEntry):
+    """Migrate old entry."""
+    LOGGER.debug("Migrating from version %s", config_entry.version)
+
+    if config_entry.version < 2:
+        """Update Config data to include valid channels/bussses etc."""
+        client = BehringerMixerApiClient(mixer_ip=config_entry.data.get("MIXER_IP"), mixer_type=config_entry.data.get("MIXER_TYPE"))
+        await client.setup(test_connection_only=True)
+        await client.async_get_data()
+        await client.stop()
+        mixer_info = client.mixer_info()
+        new = {**config_entry.data}
+        new["CHANNEL_CONFIG"] = list(range(1, mixer_info.get('channel', {}).get("number") + 1))
+        new["BUS_CONFIG"] = list(range(1, mixer_info.get('bus', {}).get("number") + 1))
+        new["DCA_CONFIG"] = list(range(1, mixer_info.get('dca', {}).get("number") + 1))
+        new["MATRIX_CONFIG"] = list(range(1, mixer_info.get('matrix', {}).get("number") + 1))
+        new["AUXIN_CONFIG"] = list(range(1, mixer_info.get('auxin', {}).get("number") + 1))
+        new["MAIN_CONFIG"] = True
+        new["CHANNELSENDS_CONFIG"] = False
+        new["BUSSENDS_CONFIG"] = False
+        config_entry.version = 2
+        hass.config_entries.async_update_entry(config_entry, data=new)
+    LOGGER.debug("Migration to version %s successful", config_entry.version)
+
+    return True

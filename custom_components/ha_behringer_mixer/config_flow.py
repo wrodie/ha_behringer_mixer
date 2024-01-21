@@ -18,7 +18,7 @@ from .const import DOMAIN, LOGGER
 class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for BehringerMixer."""
 
-    VERSION = 1
+    VERSION = 2
 
     async def async_step_user(
         self,
