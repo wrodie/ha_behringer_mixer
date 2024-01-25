@@ -21,6 +21,8 @@ In addition to these 'fader' related variables, also provided is
 
 - Current scene/snapshot number/index (Read/Write)
 - Firmware (Read only)
+- USB Filename (Read only)
+- USB Player/Recorder status (Read/Write)
 
 ## Mixers Supported
 

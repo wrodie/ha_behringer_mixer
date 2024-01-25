@@ -23,8 +23,8 @@ class BehringerMixerEntity(CoordinatorEntity):
         """Initialize the entity class."""
         super().__init__(coordinator)
         self.base_address = entity_setup.get("base_address")
-        self.default_name = entity_setup.get("default_name")
-        self.name_suffix = entity_setup.get("name_suffix")
+        self.default_name = entity_setup.get("default_name") or ""
+        self.name_suffix = entity_setup.get("name_suffix") or ""
         key = entity_setup.get("key")
         self._attr_unique_id = key
         self._attr_entity_id = DOMAIN + "." + key

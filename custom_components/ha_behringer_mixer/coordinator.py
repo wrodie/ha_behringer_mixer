@@ -35,7 +35,7 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
             logger=LOGGER,
             name=DOMAIN,
         )
-        self.sub_connected = False
+        self.sub_connected = True
         self.entity_base_id = self.config_entry.data["NAME"]
         self.entity_catalog = self.build_entity_catalog(self.client.mixer_info())
 
@@ -55,6 +55,7 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
             "SENSOR": [],
             "NUMBER": [],
             "SWITCH": [],
+            "SELECT": [],
         }
         if self.config_entry.data.get("MAIN_CONFIG"):
             self.fader_group(entities, "main", 0, "main/st")
@@ -106,6 +107,22 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
                 "key": f"{self.entity_base_id}_firmware",
                 "default_name": "Firmware Version",
                 "base_address": "/firmware",
+            }
+        ),
+        entities["SENSOR"].append(
+            {
+                "type": "generic",
+                "key": f"{self.entity_base_id}_usb_filename",
+                "default_name": "USB Filename",
+                "base_address": "/usb/file",
+            }
+        )
+        entities["SELECT"].append(
+            {
+                "type": "generic",
+                "key": f"{self.entity_base_id}_tape_state",
+                "default_name": "USB Tape State",
+                "base_address": "/usb/state",
             }
         )
         return entities
