@@ -4,6 +4,7 @@ import logging
 import asyncio
 from behringer_mixer import mixer_api
 
+
 class BehringerMixerApiClientError(Exception):
     """Exception to indicate a general API error."""
 
@@ -77,8 +78,10 @@ class BehringerMixerApiClient:
         """Change the scene."""
         return await self._mixer.load_scene(scene_number)
 
-    def new_data_callback(self, data: dict):  # pylint: disable=unused-argument
+    def new_data_callback(self, data: dict):
         """Handle the callback indicating new data has been received."""
+        if data.get("property").endswith("_db"):
+            return True
         if self.coordinator:
             self.coordinator.async_set_updated_data(self._get_data())
         return True
