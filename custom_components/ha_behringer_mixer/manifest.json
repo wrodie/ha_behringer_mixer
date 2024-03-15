@@ -8,7 +8,7 @@
     "iot_class": "local_push",
     "issue_tracker": "https://github.com/wrodie/ha_behringer_mixer/issues",
     "requirements": [
-      "behringer-mixer==0.4.3"
+      "behringer-mixer==0.4.4"
     ],
-    "version": "0.1.7"
+    "version": "0.1.8"
 }
