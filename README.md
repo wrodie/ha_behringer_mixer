@@ -82,5 +82,4 @@ If you want to contribute to this please read the [Contribution guidelines](CONT
 [hacsbadge]: https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge
 [releases-shield]: https://img.shields.io/github/release/wrodie/ha_behringer_mixer.svg?style=for-the-badge
 [releases]: https://github.com/wrodie/ha_behringer_mixer/releases
-[integration_blueprint]: https://github.com/ludeeus/integration_blueprint
-[license-shield]: https://img.shields.io/github/license/ludeeus/integration_blueprint.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/wrodie/ha_behringer_mixer.svg?style=for-the-badge

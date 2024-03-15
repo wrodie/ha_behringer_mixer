@@ -53,4 +53,6 @@ class BehringerMixerUSBState(BehringerMixerEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         """Return the current option."""
-        return self.coordinator.data[self.base_address]
+        if self.base_address in self.coordinator.data:
+            return self.coordinator.data[self.base_address]
+        return None

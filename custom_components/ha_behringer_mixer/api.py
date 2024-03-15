@@ -80,7 +80,7 @@ class BehringerMixerApiClient:
 
     def new_data_callback(self, data: dict):
         """Handle the callback indicating new data has been received."""
-        if data.get("property").endswith("_db"):
+        if data and data.get("property") and data.get("property").endswith("_db"):
             return True
         if self.coordinator:
             self.coordinator.async_set_updated_data(self._get_data())
