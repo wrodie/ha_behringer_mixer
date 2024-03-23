@@ -69,18 +69,36 @@ class BehringerMixerSceneNumber(BehringerMixerEntity, NumberEntity):
 class BehringerMixerFader(BehringerMixerEntity, NumberEntity):
     """Behringer_mixer Number class."""
 
-    _attr_native_max_value = 1
     _attr_native_min_value = 0
     _attr_icon = "mdi:volume-source"
 
     @property
+    def native_max_value(self) -> float | None:
+        """Maximum value of the entity."""
+        if self.coordinator.config_entry.data.get("UPSCALE_100"):
+            return 100
+        return 1
+
+    @property
     def native_value(self) -> float | None:
         """Value of the entity."""
-        return self.coordinator.data.get(self.base_address + "/mix_fader", "")
+        value = self.coordinator.data.get(self.base_address + "/mix_fader", "")
+        if self.coordinator.config_entry.data.get("UPSCALE_100"):
+            return 100 * value
+        return value
 
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
 
+        if self.coordinator.config_entry.data.get("UPSCALE_100"):
+            value = value / 100
         await self.coordinator.client.async_set_value(
             self.base_address + "/mix_fader", value
         )
+
+    @property
+    def extra_state_attributes(self):
+        """Generate extra state attributes."""
+        attrs = {}
+        attrs["db"] = self.coordinator.data.get(self.base_address + "/mix_fader_db", "") or -90
+        return attrs
