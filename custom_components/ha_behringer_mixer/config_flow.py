@@ -18,7 +18,7 @@ from .const import DOMAIN, LOGGER
 class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for BehringerMixer."""
 
-    VERSION = 2
+    VERSION = 3
 
     async def async_step_user(
         self,
@@ -84,6 +84,8 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             self.init_info["MAIN_CONFIG"] = user_input["MAIN"] or False
             self.init_info["CHANNELSENDS_CONFIG"] = user_input["CHANNELSENDS"] or False
             self.init_info["BUSSENDS_CONFIG"] = user_input["BUSSENDS"] or False
+            self.init_info["DBSENSORS"] = user_input["DBSENSORS"] or False
+            self.init_info["UPSCALE_100"] = user_input["UPSCALE_100"] or False
             return self.async_create_entry(
                 title=self.init_info["NAME"],
                 data=self.init_info,
@@ -128,6 +130,8 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Optional("MAIN", default=True): cv.boolean,
                     vol.Optional("CHANNELSENDS", default=False): cv.boolean,
                     vol.Optional("BUSSENDS", default=False): cv.boolean,
+                    vol.Optional("DBSENSORS", default=True): cv.boolean,
+                    vol.Optional("UPSCALE_100", default=False): cv.boolean,
                 }
             ),
             errors=_errors,

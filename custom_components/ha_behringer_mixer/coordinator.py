@@ -155,12 +155,13 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
                 "base_address": base_address,
             }
         )
-        entities["SENSOR"].append(
-            {
-                "type": "faderdb",
-                "key": f"{self.entity_base_id}_{entity_part}_fader_db",
-                "default_name": default_name,
-                "name_suffix": "Fader (dB)",
-                "base_address": base_address,
-            }
-        )
+        if self.config_entry.data.get("DBSENSORS"):
+            entities["SENSOR"].append(
+                {
+                    "type": "faderdb",
+                    "key": f"{self.entity_base_id}_{entity_part}_fader_db",
+                    "default_name": default_name,
+                    "name_suffix": "Fader (dB)",
+                    "base_address": base_address,
+                }
+            )
