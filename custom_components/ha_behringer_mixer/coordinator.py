@@ -59,6 +59,8 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
         }
         if self.config_entry.data.get("MAIN_CONFIG"):
             self.fader_group(entities, "main", 0, "main/st")
+            if mixer_info.get("has_mono", False):
+                self.fader_group(entities, "mono", 0, "main/m")
         # Input channels
         for entity_type in types:
             # num_type = mixer_info.get(entity_type, {}).get("number")
