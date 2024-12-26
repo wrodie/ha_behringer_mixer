@@ -94,6 +94,16 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
                         base_key,
                         f"bus {bus_number} -> matrix {matrix_number}",
                     )
+        # Head Amps
+        if self.config_entry.data.get("HEADAMPS_CONFIG"):
+            base_key = mixer_info.get("head_amps", {}).get("base_address")
+            for headamp_number in self.config_entry.data.get("HEADAMPS_CONFIG", []):
+                self.headamp_group(
+                    entities,
+                    "headamp",
+                    headamp_number,
+                    base_key
+                )
 
         entities["NUMBER"].append(
             {
@@ -141,7 +151,7 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
         default_name = name or default_name
         entities["SWITCH"].append(
             {
-                "type": "on",
+                "type": "mute",
                 "key": f"{self.entity_base_id}_{entity_part}_on",
                 "default_name": default_name,
                 "name_suffix": "On",
@@ -167,3 +177,32 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
                     "base_address": base_address,
                 }
             )
+
+    def headamp_group(self, entities, entity_type, index_number, base_key, name=""):
+        """Generate entities for a headamp."""
+        entity_part = entity_type
+        base_address = f"/{base_key}"
+        default_name = "HeadAmp"
+        if index_number:
+            entity_part = entity_type + "_" + str(index_number)
+            base_address = base_address + "/" + str(index_number)
+            default_name = default_name + " " + str(index_number or 0)
+        default_name = name or default_name
+        entities["SWITCH"].append(
+            {
+                "type": "on",
+                "key": f"{self.entity_base_id}_{entity_part}_phantom",
+                "default_name": default_name,
+                "name_suffix": "Phantom Power",
+                "base_address": f"{base_address}/phantom",
+            }
+        )
+        entities["NUMBER"].append(
+            {
+                "type": "float",
+                "key": f"{self.entity_base_id}_{entity_part}_gain",
+                "default_name": default_name,
+                "name_suffix": "Gain",
+                "base_address": f"{base_address}/gain",
+            }
+        )

@@ -85,14 +85,16 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
         new["MAIN_CONFIG"] = True
         new["CHANNELSENDS_CONFIG"] = False
         new["BUSSENDS_CONFIG"] = False
-        config_entry.version = 2
-        hass.config_entries.async_update_entry(config_entry, data=new)
+        hass.config_entries.async_update_entry(config_entry, data=new, version =2)
     if config_entry.version < 3:
         new = {**config_entry.data}
         new["DBSENSORS"] = True
         new["UPSCALE_100"] = False
-        config_entry.version = 3
-        hass.config_entries.async_update_entry(config_entry, data=new)
+        hass.config_entries.async_update_entry(config_entry, data=new, version =3)
+    if config_entry.version < 4:
+        new = {**config_entry.data}
+        new["HEADAMPS_CONFIG"] = 0
+        hass.config_entries.async_update_entry(config_entry, data=new, version =4)
 
     LOGGER.debug("Migration to version %s successful", config_entry.version)
 

@@ -32,6 +32,17 @@ def build_entities(coordinator):
                     entity_setup=entity,
                 )
             )
+        elif entity.get("type") == "float":
+            entities.append(
+                BehringerMixerFloat(
+                    coordinator=coordinator,
+                    entity_description=NumberEntityDescription(
+                        key=entity.get("key"),
+                        name=entity.get("default_name"),
+                    ),
+                    entity_setup=entity,
+                )
+            )
         else:
             entities.append(
                 BehringerMixerFader(
@@ -65,6 +76,26 @@ class BehringerMixerSceneNumber(BehringerMixerEntity, NumberEntity):
         """Update the current scene."""
         await self.coordinator.client.load_scene(int(value))
 
+class BehringerMixerFloat(BehringerMixerEntity, NumberEntity):
+    """Behringer_mixer Float Number class."""
+
+    _attr_native_min_value = 0
+    _attr_native_max_value = 1
+    @property
+    def native_value(self) -> float | None:
+        """Value of the entity."""
+        return self.coordinator.data.get(self.base_address, "")
+
+    @property
+    def name(self) -> str | None:
+        """Name  of the entity."""
+        return self.default_name
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Update the current scene."""
+        await self.coordinator.client.async_set_value(
+            self.base_address, value
+        )
 
 class BehringerMixerFader(BehringerMixerEntity, NumberEntity):
     """Behringer_mixer Number class."""
