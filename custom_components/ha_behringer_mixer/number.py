@@ -32,9 +32,9 @@ def build_entities(coordinator):
                     entity_setup=entity,
                 )
             )
-        elif entity.get("type") == "float":
+        elif entity.get("type") == "headamp_gain":
             entities.append(
-                BehringerMixerFloat(
+                BehringerMixerHeadAmpGain(
                     coordinator=coordinator,
                     entity_description=NumberEntityDescription(
                         key=entity.get("key"),
@@ -76,7 +76,7 @@ class BehringerMixerSceneNumber(BehringerMixerEntity, NumberEntity):
         """Update the current scene."""
         await self.coordinator.client.load_scene(int(value))
 
-class BehringerMixerFloat(BehringerMixerEntity, NumberEntity):
+class BehringerMixerHeadAmpGain(BehringerMixerEntity, NumberEntity):
     """Behringer_mixer Float Number class."""
 
     _attr_native_min_value = 0
@@ -96,6 +96,12 @@ class BehringerMixerFloat(BehringerMixerEntity, NumberEntity):
         await self.coordinator.client.async_set_value(
             self.base_address, value
         )
+    @property
+    def extra_state_attributes(self):
+        """Generate extra state attributes."""
+        attrs = {}
+        attrs["db"] = self.coordinator.data.get(self.base_address + "_db", "") or -12
+        return attrs
 
 class BehringerMixerFader(BehringerMixerEntity, NumberEntity):
     """Behringer_mixer Number class."""

@@ -199,7 +199,7 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
         )
         entities["NUMBER"].append(
             {
-                "type": "float",
+                "type": "headamp_gain",
                 "key": f"{self.entity_base_id}_{entity_part}_gain",
                 "default_name": default_name,
                 "name_suffix": "Gain",
