@@ -46,7 +46,6 @@ def build_entities(coordinator):
 class BehringerMixerSwitchGeneric(BehringerMixerEntity, SwitchEntity):
     """Behringer_mixer switch generic class."""
 
-
     @property
     def is_on(self) -> bool:
         """Return true if the switch is on."""
