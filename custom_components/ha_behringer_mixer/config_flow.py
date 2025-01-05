@@ -84,6 +84,7 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             self.init_info["MAIN_CONFIG"] = user_input["MAIN"] or False
             self.init_info["CHANNELSENDS_CONFIG"] = user_input["CHANNELSENDS"] or False
             self.init_info["BUSSENDS_CONFIG"] = user_input["BUSSENDS"] or False
+            self.init_info["FADER_MEDIA_PLAYERS"] = user_input["FADER_MEDIA_PLAYERS"] or False
             self.init_info["DBSENSORS"] = user_input["DBSENSORS"] or False
             self.init_info["UPSCALE_100"] = user_input["UPSCALE_100"] or False
             self.init_info["HEADAMPS_CONFIG"] = user_input["HEADAMPS"]
@@ -137,6 +138,7 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Optional("BUSSENDS", default=False): cv.boolean,
                     vol.Optional("DBSENSORS", default=True): cv.boolean,
                     vol.Optional("UPSCALE_100", default=False): cv.boolean,
+                    vol.Optional("FADER_MEDIA_PLAYERS", default=False): cv.boolean,
                 }
             ),
             errors=_errors,

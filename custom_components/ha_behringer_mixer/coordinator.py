@@ -56,6 +56,7 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
             "NUMBER": [],
             "SWITCH": [],
             "SELECT": [],
+            "MEDIA_PLAYER": [],
         }
         if self.config_entry.data.get("MAIN_CONFIG"):
             self.fader_group(entities, "main", 0, "main/st")
@@ -149,6 +150,7 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
             base_address = base_address + "/" + str(index_number)
             default_name = default_name + " " + str(index_number or 0)
         default_name = name or default_name
+
         entities["SWITCH"].append(
             {
                 "type": "mute",
@@ -174,6 +176,16 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
                     "key": f"{self.entity_base_id}_{entity_part}_fader_db",
                     "default_name": default_name,
                     "name_suffix": "Fader (dB)",
+                    "base_address": base_address,
+                }
+            )
+        if self.config_entry.data.get("FADER_MEDIA_PLAYERS"):
+            entities["MEDIA_PLAYER"].append(
+                {
+                    "type": "fader",
+                    "key": f"{self.entity_base_id}_{entity_part}_player",
+                    "default_name": default_name,
+                    "name_suffix": "Fader",
                     "base_address": base_address,
                 }
             )
