@@ -56,6 +56,7 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
             "NUMBER": [],
             "SWITCH": [],
             "SELECT": [],
+            "MEDIA_PLAYER": [],
         }
         if self.config_entry.data.get("MAIN_CONFIG"):
             self.fader_group(entities, "main", 0, "main/st")
@@ -149,24 +150,37 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
             base_address = base_address + "/" + str(index_number)
             default_name = default_name + " " + str(index_number or 0)
         default_name = name or default_name
-        entities["SWITCH"].append(
-            {
-                "type": "mute",
-                "key": f"{self.entity_base_id}_{entity_part}_on",
-                "default_name": default_name,
-                "name_suffix": "On",
-                "base_address": base_address,
-            }
-        )
-        entities["NUMBER"].append(
-            {
-                "type": "fader",
-                "key": f"{self.entity_base_id}_{entity_part}_fader",
-                "default_name": default_name,
-                "name_suffix": "Fader",
-                "base_address": base_address,
-            }
-        )
+
+        if self.config_entry.data.get("FADER_MEDIA_PLAYERS"):
+            entities["MEDIA_PLAYER"].append(
+                {
+                    "type": "fader",
+                    "key": f"{self.entity_base_id}_{entity_part}_player",
+                    "default_name": default_name,
+                    "name_suffix": "Fader",
+                    "base_address": base_address,
+                }
+            )
+        else:
+            entities["SWITCH"].append(
+                {
+                    "type": "mute",
+                    "key": f"{self.entity_base_id}_{entity_part}_on",
+                    "default_name": default_name,
+                    "name_suffix": "On",
+                    "base_address": base_address,
+                }
+            )
+            entities["NUMBER"].append(
+                {
+                    "type": "fader",
+                    "key": f"{self.entity_base_id}_{entity_part}_fader",
+                    "default_name": default_name,
+                    "name_suffix": "Fader",
+                    "base_address": base_address,
+                }
+            )
+
         if self.config_entry.data.get("DBSENSORS"):
             entities["SENSOR"].append(
                 {
