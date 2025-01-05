@@ -151,36 +151,24 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
             default_name = default_name + " " + str(index_number or 0)
         default_name = name or default_name
 
-        if self.config_entry.data.get("FADER_MEDIA_PLAYERS"):
-            entities["MEDIA_PLAYER"].append(
-                {
-                    "type": "fader",
-                    "key": f"{self.entity_base_id}_{entity_part}_player",
-                    "default_name": default_name,
-                    "name_suffix": "Fader",
-                    "base_address": base_address,
-                }
-            )
-        else:
-            entities["SWITCH"].append(
-                {
-                    "type": "mute",
-                    "key": f"{self.entity_base_id}_{entity_part}_on",
-                    "default_name": default_name,
-                    "name_suffix": "On",
-                    "base_address": base_address,
-                }
-            )
-            entities["NUMBER"].append(
-                {
-                    "type": "fader",
-                    "key": f"{self.entity_base_id}_{entity_part}_fader",
-                    "default_name": default_name,
-                    "name_suffix": "Fader",
-                    "base_address": base_address,
-                }
-            )
-
+        entities["SWITCH"].append(
+            {
+                "type": "mute",
+                "key": f"{self.entity_base_id}_{entity_part}_on",
+                "default_name": default_name,
+                "name_suffix": "On",
+                "base_address": base_address,
+            }
+        )
+        entities["NUMBER"].append(
+            {
+                "type": "fader",
+                "key": f"{self.entity_base_id}_{entity_part}_fader",
+                "default_name": default_name,
+                "name_suffix": "Fader",
+                "base_address": base_address,
+            }
+        )
         if self.config_entry.data.get("DBSENSORS"):
             entities["SENSOR"].append(
                 {
@@ -188,6 +176,16 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
                     "key": f"{self.entity_base_id}_{entity_part}_fader_db",
                     "default_name": default_name,
                     "name_suffix": "Fader (dB)",
+                    "base_address": base_address,
+                }
+            )
+        if self.config_entry.data.get("FADER_MEDIA_PLAYERS"):
+            entities["MEDIA_PLAYER"].append(
+                {
+                    "type": "fader",
+                    "key": f"{self.entity_base_id}_{entity_part}_player",
+                    "default_name": default_name,
+                    "name_suffix": "Fader",
                     "base_address": base_address,
                 }
             )
