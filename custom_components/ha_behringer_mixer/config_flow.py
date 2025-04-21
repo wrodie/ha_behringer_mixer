@@ -3,7 +3,10 @@ from __future__ import annotations
 
 import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import callback
 from homeassistant.helpers import selector
+
 from homeassistant.helpers import config_validation as cv
 
 from .api import (
@@ -28,7 +31,7 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         _errors = {}
         if user_input is not None:
             try:
-                user_input["NAME_DEFAULT"] = await self._test_connect(
+                user_input["NAME_DEFAULT"] = await self.test_connect(
                     mixer_ip=user_input["MIXER_IP"],
                     mixer_type=user_input["MIXER_TYPE"],
                 )
@@ -72,7 +75,6 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         user_input: dict | None = None,
     ) -> config_entries.FlowResult:
         """Handle a flow initialized by the user."""
-
         _errors = {}
         if user_input is not None and user_input.get("NAME"):
             self.init_info["NAME"] = user_input["NAME"]
@@ -91,71 +93,154 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 title=self.init_info["NAME"],
                 data=self.init_info,
             )
+        return await show_options_form("name", self, _errors, {"NAME": user_input["NAME_DEFAULT"]})
 
-        mixer_info = await self._mixer_info(
-            mixer_ip=user_input["MIXER_IP"],
-            mixer_type=user_input["MIXER_TYPE"],
-        )
-        channel_options = self.create_list(mixer_info["channel"]["number"])
-        bus_options = self.create_list(mixer_info["bus"]["number"])
-        matrix_options = self.create_list(mixer_info["matrix"]["number"])
-        dca_options = self.create_list(mixer_info["dca"]["number"])
-        auxin_options = self.create_list(mixer_info["auxin"]["number"])
-        headamps_options = self.create_list(mixer_info["head_amps"]["number"])
+    @staticmethod
+    @callback
+    def async_get_options_flow(
+        config_entry: ConfigEntry,
+    ) -> OptionsFlowHandler:
+        """Create the options flow."""
+        return OptionsFlowHandler()
+
+    @staticmethod
+    async def test_connect(mixer_ip: str, mixer_type: str) -> None:
+        """Validate IP/Type."""
+        try:
+            client = BehringerMixerApiClient(mixer_ip=mixer_ip, mixer_type=mixer_type)
+            await client.setup(test_connection_only=True)
+            await client.async_get_data()
+            await client.stop()
+            if not client.mixer_network_name():
+                raise BehringerMixerApiClientCommunicationError
+            return client.mixer_network_name()
+        except Exception as e:
+            LOGGER.error("Error during test_connect: %s", e)
+            raise
+
+    @staticmethod
+    async def mixer_info(mixer_ip: str, mixer_type: str) -> None:
+        """Load Mixer Information."""
+        try:
+            client = BehringerMixerApiClient(mixer_ip=mixer_ip, mixer_type=mixer_type)
+            await client.setup(test_connection_only=True)
+            await client.async_get_data()
+            await client.stop()
+            return client.mixer_info()
+        except Exception as e:
+            LOGGER.error("Error during test_connect: %s", e)
+            raise
+
+class OptionsFlowHandler(config_entries.OptionsFlow):
+    """Handle options flow for BehringerMixer."""
+
+    #def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+    #    """Initialize options flow."""
+    #    self.config_entry = config_entry
+
+    async def async_step_init(self, user_input: dict | None = None) -> config_entries.FlowResult:
+        """Manage the options."""
+
+        _errors = {}
+        print("IN STEP INIT options")
+        if user_input is not None:
+            user_input["MIXER_TYPE"] = self.config_entry.data.get("MIXER_TYPE")
+            try:
+                print("TESTING CONNECTION")
+                print(user_input)
+                await BehringerMixerFlowHandler.test_connect(
+                    mixer_ip=user_input["MIXER_IP"],
+                    mixer_type=user_input["MIXER_TYPE"],
+                )
+            except BehringerMixerApiClientAuthenticationError as exception:
+                LOGGER.warning(exception)
+                _errors["base"] = "auth"
+            except BehringerMixerApiClientCommunicationError as exception:
+                LOGGER.error(exception)
+                _errors["base"] = "connection"
+            except BehringerMixerApiClientError as exception:
+                LOGGER.exception(exception)
+                _errors["base"] = "unknown"
+            else:
+                self.init_info = user_input
+                return await self.async_step_name()
 
         return self.async_show_form(
-            step_id="name",
+            step_id="init",
             data_schema=vol.Schema(
                 {
-                    vol.Required(
-                        "NAME", default=user_input.get("NAME_DEFAULT")
-                    ): selector.TextSelector(
+                    vol.Required("MIXER_IP", default=self.config_entry.data.get("MIXER_IP", "")): selector.TextSelector(
                         selector.TextSelectorConfig(
                             type=selector.TextSelectorType.TEXT
                         ),
                     ),
-                    vol.Optional("CHANNELS", default=channel_options): cv.multi_select(
-                        channel_options
-                    ),
-                    vol.Optional("BUSSES", default=bus_options): cv.multi_select(
-                        bus_options
-                    ),
-                    vol.Optional("DCAS", default=dca_options): cv.multi_select(
-                        dca_options
-                    ),
-                    vol.Optional("MATRICES", default=matrix_options): cv.multi_select(
-                        matrix_options
-                    ),
-                    vol.Optional("AUXINS", default=auxin_options): cv.multi_select(
-                        auxin_options
-                    ),
-                    vol.Optional("HEADAMPS", default=[]): cv.multi_select(
-                        headamps_options
-                    ),
-                    vol.Optional("MAIN", default=True): cv.boolean,
-                    vol.Optional("CHANNELSENDS", default=False): cv.boolean,
-                    vol.Optional("BUSSENDS", default=False): cv.boolean,
-                    vol.Optional("DBSENSORS", default=True): cv.boolean,
-                    vol.Optional("UPSCALE_100", default=False): cv.boolean,
                 }
             ),
             errors=_errors,
         )
 
-    async def _test_connect(self, mixer_ip: str, mixer_type: str) -> None:
-        """Validate IP/Type."""
-        client = BehringerMixerApiClient(mixer_ip=mixer_ip, mixer_type=mixer_type)
-        await client.setup(test_connection_only=True)
-        await client.async_get_data()
-        await client.stop()
-        if not client.mixer_network_name():
-            raise BehringerMixerApiClientCommunicationError
-        return client.mixer_network_name()
+    async def async_step_name(self, user_input: dict | None = None) -> config_entries.FlowResult:
+        """Manage the options."""
+        print("IN STEP NAME")
 
-    async def _mixer_info(self, mixer_ip: str, mixer_type: str) -> None:
-        """Load Mixer Information."""
-        client = BehringerMixerApiClient(mixer_ip=mixer_ip, mixer_type=mixer_type)
-        await client.setup(test_connection_only=True)
-        await client.async_get_data()
-        await client.stop()
-        return client.mixer_info()
+        _errors = {}
+        if user_input is not None:
+            try:
+                user_input.update(self.init_info)
+                self.hass.config_entries.async_update_entry(
+                    self.config_entry, data=user_input, options={}
+                )
+                return self.async_create_entry(data=user_input)
+            except Exception as e:
+                LOGGER.error("Error updating entry: %s", e)
+                _errors["base"] = "update_failed"
+
+        return await show_options_form("name", self, _errors, self.config_entry.data)
+
+async def show_options_form(form_id, object, errors, existing_values) -> config_entries.FlowResult:
+    """Show the options form to the user."""
+    mixer_info = await BehringerMixerFlowHandler.mixer_info(
+        mixer_ip=object.init_info["MIXER_IP"],
+        mixer_type=object.init_info["MIXER_TYPE"],
+    )
+    print("SHOWING OPTIONS FORM")
+    print(existing_values)
+    return object.async_show_form(
+        step_id=form_id,
+        data_schema=vol.Schema(
+            {
+                vol.Required("NAME", default=existing_values.get("NAME")): selector.TextSelector(
+                    selector.TextSelectorConfig(
+                        type=selector.TextSelectorType.TEXT
+                    ),
+                ),
+                #vol.Optional("CHANNELS", default=existing_values.get("CHANNELS", [])): select(
+                #    BehringerMixerFlowHandler.create_list(mixer_info["channel"]["number"])
+                #),
+                vol.Optional("CHANNELS", default=existing_values.get("CHANNEL_CONFIG", [])): cv.multi_select(
+                    BehringerMixerFlowHandler.create_list(mixer_info["channel"]["number"])
+                ),
+                vol.Optional("BUSSES", default=existing_values.get("BUS_CONFIG", [])): cv.multi_select(
+                    BehringerMixerFlowHandler.create_list(mixer_info["bus"]["number"])
+                ),
+                vol.Optional("DCAS", default=existing_values.get("DCA_CONFIG", [])): cv.multi_select(
+                    BehringerMixerFlowHandler.create_list(mixer_info["dca"]["number"])
+                ),
+                vol.Optional("MATRICES", default=existing_values.get("MATRIX_CONFIG", [])): cv.multi_select(
+                    BehringerMixerFlowHandler.create_list(mixer_info["matrix"]["number"])
+                ),
+                vol.Optional("AUXINS", default=existing_values.get("AUXIN_CONFIG", [])): cv.multi_select(
+                    BehringerMixerFlowHandler.create_list(mixer_info["auxin"]["number"])
+                ),
+                vol.Optional("HEADAMPS", default=existing_values.get("HEADAMPS_CONFIG", [])): cv.multi_select(
+                    BehringerMixerFlowHandler.create_list(mixer_info["head_amps"]["number"])
+                ),
+                vol.Optional("MAIN", default=existing_values.get("MAIN", True)): cv.boolean,
+                vol.Optional("CHANNELSENDS", default=existing_values.get("CHANNELSENDS", False)): cv.boolean,
+                vol.Optional("BUSSENDS", default=existing_values.get("BUSSENDS", False)): cv.boolean,
+                vol.Optional("DBSENSORS", default=existing_values.get("DBSENSORS", True)): cv.boolean,
+                vol.Optional("UPSCALE_100", default=existing_values.get("UPSCALE_100", False)): cv.boolean,
+            }
+        ),
+        errors=errors,
+    )
