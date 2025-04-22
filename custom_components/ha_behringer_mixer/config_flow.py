@@ -78,30 +78,22 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         _errors = {}
         if user_input is not None and user_input.get("NAME"):
             self.init_info["NAME"] = user_input["NAME"]
-            self.init_info["CHANNEL_CONFIG"] = user_input["CHANNELS"]
-            self.init_info["BUS_CONFIG"] = user_input["BUSSES"]
-            self.init_info["DCA_CONFIG"] = user_input["DCAS"]
-            self.init_info["MATRIX_CONFIG"] = user_input["MATRICES"]
-            self.init_info["AUXIN_CONFIG"] = user_input["AUXINS"]
-            self.init_info["MAIN_CONFIG"] = user_input["MAIN"] or False
-            self.init_info["CHANNELSENDS_CONFIG"] = user_input["CHANNELSENDS"] or False
-            self.init_info["BUSSENDS_CONFIG"] = user_input["BUSSENDS"] or False
+            self.init_info["CHANNEL_CONFIG"] = user_input["CHANNEL_CONFIG"]
+            self.init_info["BUS_CONFIG"] = user_input["BUS_CONFIG"]
+            self.init_info["DCA_CONFIG"] = user_input["DCA_CONFIG"]
+            self.init_info["MATRIX_CONFIG"] = user_input["MATRIX_CONFIG"]
+            self.init_info["AUXIN_CONFIG"] = user_input["AUXIN_CONFIG"]
+            self.init_info["MAIN_CONFIG"] = user_input["MAIN_CONFIG"] or False
+            self.init_info["CHANNELSENDS_CONFIG"] = user_input["CHANNELSENDS_CONFIG"] or False
+            self.init_info["BUSSENDS_CONFIG"] = user_input["BUSSENDS_CONFIG"] or False
             self.init_info["DBSENSORS"] = user_input["DBSENSORS"] or False
             self.init_info["UPSCALE_100"] = user_input["UPSCALE_100"] or False
-            self.init_info["HEADAMPS_CONFIG"] = user_input["HEADAMPS"]
+            self.init_info["HEADAMPS_CONFIG"] = user_input["HEADAMPS_CONFIG"]
             return self.async_create_entry(
                 title=self.init_info["NAME"],
                 data=self.init_info,
             )
         return await show_options_form("name", self, _errors, {"NAME": user_input["NAME_DEFAULT"]})
-
-    @staticmethod
-    @callback
-    def async_get_options_flow(
-        config_entry: ConfigEntry,
-    ) -> OptionsFlowHandler:
-        """Create the options flow."""
-        return OptionsFlowHandler()
 
     @staticmethod
     async def test_connect(mixer_ip: str, mixer_type: str) -> None:
@@ -131,15 +123,16 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             LOGGER.error("Error during test_connect: %s", e)
             raise
 
-class OptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle options flow for BehringerMixer."""
-
-    async def async_step_init(self, user_input: dict | None = None) -> config_entries.FlowResult:
+    async def async_step_reconfigure(self, user_input: dict | None = None) -> config_entries.ConfigFlowResult:
         """Manage the options."""
 
         _errors = {}
+        config_entry = self.hass.config_entries.async_get_entry(
+            self.context["entry_id"]
+        )
         if user_input is not None:
-            user_input["MIXER_TYPE"] = self.config_entry.data.get("MIXER_TYPE")
+
+            user_input["MIXER_TYPE"] = config_entry.data.get("MIXER_TYPE")
             try:
                 await BehringerMixerFlowHandler.test_connect(
                     mixer_ip=user_input["MIXER_IP"],
@@ -156,13 +149,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 _errors["base"] = "unknown"
             else:
                 self.init_info = user_input
-                return await self.async_step_name()
+                return await self.async_step_reconfigname()
 
         return self.async_show_form(
-            step_id="init",
+            step_id="reconfigure",
             data_schema=vol.Schema(
                 {
-                    vol.Required("MIXER_IP", default=self.config_entry.data.get("MIXER_IP", "")): selector.TextSelector(
+                    vol.Required("MIXER_IP", default=config_entry.data.get("MIXER_IP", "")): selector.TextSelector(
                         selector.TextSelectorConfig(
                             type=selector.TextSelectorType.TEXT
                         ),
@@ -172,22 +165,26 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             errors=_errors,
         )
 
-    async def async_step_name(self, user_input: dict | None = None) -> config_entries.FlowResult:
+    async def async_step_reconfigname(self, user_input: dict | None = None) -> config_entries.ConfigFlowResult:
         """Manage the options."""
 
         _errors = {}
+        config_entry = self.hass.config_entries.async_get_entry(
+            self.context["entry_id"]
+        )
         if user_input is not None:
             try:
                 user_input.update(self.init_info)
-                self.hass.config_entries.async_update_entry(
-                    self.config_entry, data=user_input
+                return self.async_update_reload_and_abort(
+                    self._get_reconfigure_entry(),
+                    data_updates=user_input,
                 )
-                return self.async_create_entry(data=user_input)
             except Exception as e:
                 LOGGER.error("Error updating entry: %s", e)
                 _errors["base"] = "update_failed"
 
-        return await show_options_form("name", self, _errors, self.config_entry.data)
+        return await show_options_form("reconfigname", self, _errors, config_entry.data)
+
 
 async def show_options_form(form_id, object, errors, existing_values) -> config_entries.FlowResult:
     """Show the options form to the user."""
@@ -204,30 +201,27 @@ async def show_options_form(form_id, object, errors, existing_values) -> config_
                         type=selector.TextSelectorType.TEXT
                     ),
                 ),
-                #vol.Optional("CHANNELS", default=existing_values.get("CHANNELS", [])): select(
-                #    BehringerMixerFlowHandler.create_list(mixer_info["channel"]["number"])
-                #),
-                vol.Optional("CHANNELS", default=existing_values.get("CHANNEL_CONFIG", [])): cv.multi_select(
+                vol.Optional("CHANNEL_CONFIG", default=existing_values.get("CHANNEL_CONFIG", [])): cv.multi_select(
                     BehringerMixerFlowHandler.create_list(mixer_info["channel"]["number"])
                 ),
-                vol.Optional("BUSSES", default=existing_values.get("BUS_CONFIG", [])): cv.multi_select(
+                vol.Optional("BUS_CONFIG", default=existing_values.get("BUS_CONFIG", [])): cv.multi_select(
                     BehringerMixerFlowHandler.create_list(mixer_info["bus"]["number"])
                 ),
-                vol.Optional("DCAS", default=existing_values.get("DCA_CONFIG", [])): cv.multi_select(
+                vol.Optional("DCA_CONFIG", default=existing_values.get("DCA_CONFIG", [])): cv.multi_select(
                     BehringerMixerFlowHandler.create_list(mixer_info["dca"]["number"])
                 ),
-                vol.Optional("MATRICES", default=existing_values.get("MATRIX_CONFIG", [])): cv.multi_select(
+                vol.Optional("MATRIX_CONFIG", default=existing_values.get("MATRIX_CONFIG", [])): cv.multi_select(
                     BehringerMixerFlowHandler.create_list(mixer_info["matrix"]["number"])
                 ),
-                vol.Optional("AUXINS", default=existing_values.get("AUXIN_CONFIG", [])): cv.multi_select(
+                vol.Optional("AUXIN_CONFIG", default=existing_values.get("AUXIN_CONFIG", [])): cv.multi_select(
                     BehringerMixerFlowHandler.create_list(mixer_info["auxin"]["number"])
                 ),
-                vol.Optional("HEADAMPS", default=existing_values.get("HEADAMPS_CONFIG", [])): cv.multi_select(
+                vol.Optional("HEADAMPS_CONFIG", default=existing_values.get("HEADAMPS_CONFIG", [])): cv.multi_select(
                     BehringerMixerFlowHandler.create_list(mixer_info["head_amps"]["number"])
                 ),
-                vol.Optional("MAIN", default=existing_values.get("MAIN_CONFIG", True)): cv.boolean,
-                vol.Optional("CHANNELSENDS", default=existing_values.get("CHANNELSENDS_CONFIG", False)): cv.boolean,
-                vol.Optional("BUSSENDS", default=existing_values.get("BUSSENDS_CONFIG", False)): cv.boolean,
+                vol.Optional("MAIN_CONFIG", default=existing_values.get("MAIN_CONFIG", True)): cv.boolean,
+                vol.Optional("CHANNELSENDS_CONFIG", default=existing_values.get("CHANNELSENDS_CONFIG", False)): cv.boolean,
+                vol.Optional("BUSSENDS_CONFIG", default=existing_values.get("BUSSENDS_CONFIG", False)): cv.boolean,
                 vol.Optional("DBSENSORS", default=existing_values.get("DBSENSORS", True)): cv.boolean,
                 vol.Optional("UPSCALE_100", default=existing_values.get("UPSCALE_100", False)): cv.boolean,
             }

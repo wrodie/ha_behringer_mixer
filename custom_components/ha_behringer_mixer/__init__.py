@@ -19,9 +19,6 @@ PLATFORMS: list[Platform] = [
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up this integration using UI."""
     hass.data.setdefault(DOMAIN, {})
-    print("SETUP ENTRY")
-    print(entry)
-    print(entry.data)
     try:
         client = BehringerMixerApiClient(
             mixer_ip=entry.data["MIXER_IP"], mixer_type=entry.data["MIXER_TYPE"]
@@ -39,7 +36,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         client.register_coordinator(coordinator)
 
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-        entry.async_on_unload(entry.add_update_listener(async_reload_integration))
 
     except Exception as e:
         LOGGER.error("Failed to set up entry: %s", e)
@@ -60,13 +56,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unloaded
-
-
-async def async_reload_integration(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Reload integration"""
-
-    print("CALLED RELOAD INTEGRATION")
-    hass.config_entries.async_schedule_reload(entry.entry_id)
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload config entry."""
