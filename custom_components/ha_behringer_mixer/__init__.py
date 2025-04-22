@@ -16,45 +16,51 @@ PLATFORMS: list[Platform] = [
     Platform.SELECT,
 ]
 
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up this integration using UI."""
     hass.data.setdefault(DOMAIN, {})
-
-    client = BehringerMixerApiClient(
-        mixer_ip=entry.data["MIXER_IP"], mixer_type=entry.data["MIXER_TYPE"]
-    )
-    if not await client.setup():
-        raise ConfigEntryNotReady(
-            f"Timeout while connecting to {entry.data['MIXER_IP']}"
+    try:
+        client = BehringerMixerApiClient(
+            mixer_ip=entry.data["MIXER_IP"], mixer_type=entry.data["MIXER_TYPE"]
         )
+        if not await client.setup():
+            raise ConfigEntryNotReady(
+                f"Timeout while connecting to {entry.data['MIXER_IP']}"
+            )
 
-    hass.data[DOMAIN][entry.entry_id] = coordinator = MixerDataUpdateCoordinator(
-        hass=hass,
-        client=client,
-    )
-    await coordinator.async_config_entry_first_refresh()
-    client.register_coordinator(coordinator)
+        hass.data[DOMAIN][entry.entry_id] = coordinator = MixerDataUpdateCoordinator(
+            hass=hass,
+            client=client,
+        )
+        await coordinator.async_config_entry_first_refresh()
+        client.register_coordinator(coordinator)
 
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    except Exception as e:
+        LOGGER.error("Failed to set up entry: %s", e)
+        return False
 
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Handle removal of an entry."""
-    if unloaded := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        hass.data[DOMAIN][entry.entry_id].client.stop()
-        hass.data[DOMAIN].pop(entry.entry_id)
-    return unloaded
 
+    if entry.entry_id not in hass.data.get(DOMAIN, {}):
+        LOGGER.warning("Attempted to unload an entry that was never loaded: %s", entry.entry_id)
+        return False
+
+    if unloaded := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+        await hass.data[DOMAIN][entry.entry_id].client.stop()
+        hass.data[DOMAIN].pop(entry.entry_id)
+
+    return unloaded
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload config entry."""
     await async_unload_entry(hass, entry)
     await async_setup_entry(hass, entry)
-
 
 async def async_migrate_entry(hass, config_entry: ConfigEntry):
     """Migrate old entry."""
