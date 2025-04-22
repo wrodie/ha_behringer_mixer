@@ -134,20 +134,13 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 class OptionsFlowHandler(config_entries.OptionsFlow):
     """Handle options flow for BehringerMixer."""
 
-    #def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-    #    """Initialize options flow."""
-    #    self.config_entry = config_entry
-
     async def async_step_init(self, user_input: dict | None = None) -> config_entries.FlowResult:
         """Manage the options."""
 
         _errors = {}
-        print("IN STEP INIT options")
         if user_input is not None:
             user_input["MIXER_TYPE"] = self.config_entry.data.get("MIXER_TYPE")
             try:
-                print("TESTING CONNECTION")
-                print(user_input)
                 await BehringerMixerFlowHandler.test_connect(
                     mixer_ip=user_input["MIXER_IP"],
                     mixer_type=user_input["MIXER_TYPE"],
@@ -181,14 +174,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_name(self, user_input: dict | None = None) -> config_entries.FlowResult:
         """Manage the options."""
-        print("IN STEP NAME")
 
         _errors = {}
         if user_input is not None:
             try:
                 user_input.update(self.init_info)
                 self.hass.config_entries.async_update_entry(
-                    self.config_entry, data=user_input, options={}
+                    self.config_entry, data=user_input
                 )
                 return self.async_create_entry(data=user_input)
             except Exception as e:
@@ -203,8 +195,6 @@ async def show_options_form(form_id, object, errors, existing_values) -> config_
         mixer_ip=object.init_info["MIXER_IP"],
         mixer_type=object.init_info["MIXER_TYPE"],
     )
-    print("SHOWING OPTIONS FORM")
-    print(existing_values)
     return object.async_show_form(
         step_id=form_id,
         data_schema=vol.Schema(
@@ -235,9 +225,9 @@ async def show_options_form(form_id, object, errors, existing_values) -> config_
                 vol.Optional("HEADAMPS", default=existing_values.get("HEADAMPS_CONFIG", [])): cv.multi_select(
                     BehringerMixerFlowHandler.create_list(mixer_info["head_amps"]["number"])
                 ),
-                vol.Optional("MAIN", default=existing_values.get("MAIN", True)): cv.boolean,
-                vol.Optional("CHANNELSENDS", default=existing_values.get("CHANNELSENDS", False)): cv.boolean,
-                vol.Optional("BUSSENDS", default=existing_values.get("BUSSENDS", False)): cv.boolean,
+                vol.Optional("MAIN", default=existing_values.get("MAIN_CONFIG", True)): cv.boolean,
+                vol.Optional("CHANNELSENDS", default=existing_values.get("CHANNELSENDS_CONFIG", False)): cv.boolean,
+                vol.Optional("BUSSENDS", default=existing_values.get("BUSSENDS_CONFIG", False)): cv.boolean,
                 vol.Optional("DBSENSORS", default=existing_values.get("DBSENSORS", True)): cv.boolean,
                 vol.Optional("UPSCALE_100", default=existing_values.get("UPSCALE_100", False)): cv.boolean,
             }

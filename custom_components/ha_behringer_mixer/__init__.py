@@ -39,7 +39,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         client.register_coordinator(coordinator)
 
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-        entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+        entry.async_on_unload(entry.add_update_listener(async_reload_integration))
 
     except Exception as e:
         LOGGER.error("Failed to set up entry: %s", e)
@@ -51,29 +51,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Handle removal of an entry."""
 
-    print("CALLED UNLOAD ENTRY")
-    print(hass.data[DOMAIN])
-    print(PLATFORMS)
-    print(entry)
-    print(entry.data)
-    print(entry.entry_id)
-
     if entry.entry_id not in hass.data.get(DOMAIN, {}):
         LOGGER.warning("Attempted to unload an entry that was never loaded: %s", entry.entry_id)
         return False
 
     if unloaded := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        print("UNLOADED")
         await hass.data[DOMAIN][entry.entry_id].client.stop()
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unloaded
 
+
+async def async_reload_integration(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload integration"""
+
+    print("CALLED RELOAD INTEGRATION")
+    hass.config_entries.async_schedule_reload(entry.entry_id)
+
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload config entry."""
     await async_unload_entry(hass, entry)
     await async_setup_entry(hass, entry)
-
 
 async def async_migrate_entry(hass, config_entry: ConfigEntry):
     """Migrate old entry."""
