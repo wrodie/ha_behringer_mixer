@@ -3,10 +3,7 @@ from __future__ import annotations
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import callback
 from homeassistant.helpers import selector
-
 from homeassistant.helpers import config_validation as cv
 
 from .api import (
