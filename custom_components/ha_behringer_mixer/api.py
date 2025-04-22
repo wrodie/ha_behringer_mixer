@@ -101,3 +101,5 @@ class BehringerMixerApiClient:
         """Shutdown the client."""
         await self._mixer.unsubscribe()
         await self._mixer.stop()
+        for task in self.tasks:
+            task.cancel()
