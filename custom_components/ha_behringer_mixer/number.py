@@ -137,5 +137,7 @@ class BehringerMixerFader(BehringerMixerEntity, NumberEntity):
     def extra_state_attributes(self):
         """Generate extra state attributes."""
         attrs = {}
-        attrs["db"] = self.coordinator.data.get(self.base_address + "/mix_fader_db", "") or -90
+        db_value = self.coordinator.data.get(self.base_address + "/mix_fader_db", None)
+        attrs["db"] = db_value if db_value is not None else -90
+        attrs["low_precision"] = round(self.value or 0, 3)
         return attrs
