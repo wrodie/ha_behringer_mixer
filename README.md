@@ -64,6 +64,8 @@ The data for the mixer is updated in real time, so each time a button is pressed
 - You are asked for the name of the mixer
 - You can choose which channels/busses/dcas etc to actually import (If you import everything there can be a lot)
 
+To reconfigure the integration, click the configuration icon for the integration (three dots) and choose reconfigure. Note: If you remove entities from being tracked, the integration will NOT remove them from HomeAssistant, you must remove the excess entities yourself.
+
 ## Caveats
 
 Connection to the mixer is performed via ip address using UDP. If the IP address for the mixer changes, you will need to edit the integration setup. To avoid this, set up a DHCP reservation on your router for your mixer so that it always has the same IP address.
