@@ -30,8 +30,9 @@ In addition to these 'fader' related variables, also provided is
 - XR12
 - XR16
 - XR18
+- Wing
 
-*Testing has been mostly on the X32, but has been physically tested agains X32 and XR18*
+*Testing has been mostly on the X32, but has been physically tested agains X32, Wing and XR18*
 
 ## Data Updates
 
