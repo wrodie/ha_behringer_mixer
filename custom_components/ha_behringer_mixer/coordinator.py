@@ -57,13 +57,20 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
             "SWITCH": [],
             "SELECT": [],
         }
+        num_mains = mixer_info.get("mains", {}).get("number", 0)
         if self.config_entry.data.get("MAIN_CONFIG"):
-            self.fader_group(entities, "main", 0, "main/st")
-            if mixer_info.get("has_mono", False):
-                self.fader_group(entities, "mono", 0, "main/m")
+            if(num_mains == 1):
+                self.fader_group(entities, "main", 0, "main/st")
+                if mixer_info.get("has_mono", False):
+                    self.fader_group(entities, "mono", 0, "main/m")
+            elif(num_mains > 1):
+                for main_number in range(num_mains):
+                    self.fader_group(
+                        entities, "main", (main_number+1), "main", f"Main {main_number + 1}"
+                    )
+
         # Input channels
         for entity_type in types:
-            # num_type = mixer_info.get(entity_type, {}).get("number")
             base_key = mixer_info.get(entity_type, {}).get("base_address")
             config_key = entity_type.upper() + "_CONFIG"
             for index_number in self.config_entry.data.get(config_key, []):
@@ -94,6 +101,18 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
                         base_key,
                         f"bus {bus_number} -> matrix {matrix_number}",
                     )
+        if num_mains > 1 and self.config_entry.data.get("BUSSENDS_CONFIG"):
+            base_key = mixer_info.get("bus_mainsends", {}).get("base_address")
+            for bus_number in self.config_entry.data["BUS_CONFIG"]:
+                for main_number in range(num_mains):
+                    self.fader_group(
+                        entities,
+                        "busmainsend",
+                        f"{bus_number}/{main_number+1}",
+                        base_key,
+                        f"bus {bus_number} -> main {main_number+1}",
+                    )
+
         # Head Amps
         if self.config_entry.data.get("HEADAMPS_CONFIG"):
             base_key = mixer_info.get("head_amps", {}).get("base_address")

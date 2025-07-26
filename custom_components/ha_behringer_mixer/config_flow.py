@@ -55,7 +55,7 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                         ),
                     ),
                     vol.Required("MIXER_TYPE", default="X32"): vol.In(
-                        ["X32", "XR12", "XR16", "XR18"]
+                        ["X32", "XR12", "XR16", "XR18", "WING"]
                     ),
                 }
             ),
@@ -85,7 +85,7 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             self.init_info["BUSSENDS_CONFIG"] = user_input["BUSSENDS_CONFIG"] or False
             self.init_info["DBSENSORS"] = user_input["DBSENSORS"] or False
             self.init_info["UPSCALE_100"] = user_input["UPSCALE_100"] or False
-            self.init_info["HEADAMPS_CONFIG"] = user_input["HEADAMPS_CONFIG"]
+            self.init_info["HEADAMPS_CONFIG"] = user_input.get("HEADAMPS_CONFIG")
             return self.async_create_entry(
                 title=self.init_info["NAME"],
                 data=self.init_info,
@@ -189,39 +189,43 @@ async def show_options_form(form_id, object, errors, existing_values) -> config_
         mixer_ip=object.init_info["MIXER_IP"],
         mixer_type=object.init_info["MIXER_TYPE"],
     )
+    schema_dict = {
+        vol.Required("NAME", default=existing_values.get("NAME")): selector.TextSelector(
+            selector.TextSelectorConfig(
+                type=selector.TextSelectorType.TEXT
+            ),
+        ),
+        vol.Optional("CHANNEL_CONFIG", default=existing_values.get("CHANNEL_CONFIG", [])): cv.multi_select(
+            BehringerMixerFlowHandler.create_list(mixer_info["channel"]["number"])
+        ),
+        vol.Optional("BUS_CONFIG", default=existing_values.get("BUS_CONFIG", [])): cv.multi_select(
+            BehringerMixerFlowHandler.create_list(mixer_info["bus"]["number"])
+        ),
+        vol.Optional("DCA_CONFIG", default=existing_values.get("DCA_CONFIG", [])): cv.multi_select(
+            BehringerMixerFlowHandler.create_list(mixer_info["dca"]["number"])
+        ),
+        vol.Optional("MATRIX_CONFIG", default=existing_values.get("MATRIX_CONFIG", [])): cv.multi_select(
+            BehringerMixerFlowHandler.create_list(mixer_info["matrix"]["number"])
+        ),
+        vol.Optional("AUXIN_CONFIG", default=existing_values.get("AUXIN_CONFIG", [])): cv.multi_select(
+            BehringerMixerFlowHandler.create_list(mixer_info["auxin"]["number"])
+        ),
+        vol.Optional("MAIN_CONFIG", default=existing_values.get("MAIN_CONFIG", True)): cv.boolean,
+        vol.Optional("CHANNELSENDS_CONFIG", default=existing_values.get("CHANNELSENDS_CONFIG", False)): cv.boolean,
+        vol.Optional("BUSSENDS_CONFIG", default=existing_values.get("BUSSENDS_CONFIG", False)): cv.boolean,
+        vol.Optional("DBSENSORS", default=existing_values.get("DBSENSORS", False)): cv.boolean,
+        vol.Optional("UPSCALE_100", default=existing_values.get("UPSCALE_100", False)): cv.boolean,
+    }
+
+    # Only add HEADAMPS_CONFIG if head_amps number > 0
+    if mixer_info.get("head_amps", {}).get("number", 0) > 0:
+        schema_dict[vol.Optional("HEADAMPS_CONFIG", default=existing_values.get("HEADAMPS_CONFIG", []))] = cv.multi_select(
+            BehringerMixerFlowHandler.create_list(mixer_info["head_amps"]["number"])
+        )
+
     return object.async_show_form(
         step_id=form_id,
-        data_schema=vol.Schema(
-            {
-                vol.Required("NAME", default=existing_values.get("NAME")): selector.TextSelector(
-                    selector.TextSelectorConfig(
-                        type=selector.TextSelectorType.TEXT
-                    ),
-                ),
-                vol.Optional("CHANNEL_CONFIG", default=existing_values.get("CHANNEL_CONFIG", [])): cv.multi_select(
-                    BehringerMixerFlowHandler.create_list(mixer_info["channel"]["number"])
-                ),
-                vol.Optional("BUS_CONFIG", default=existing_values.get("BUS_CONFIG", [])): cv.multi_select(
-                    BehringerMixerFlowHandler.create_list(mixer_info["bus"]["number"])
-                ),
-                vol.Optional("DCA_CONFIG", default=existing_values.get("DCA_CONFIG", [])): cv.multi_select(
-                    BehringerMixerFlowHandler.create_list(mixer_info["dca"]["number"])
-                ),
-                vol.Optional("MATRIX_CONFIG", default=existing_values.get("MATRIX_CONFIG", [])): cv.multi_select(
-                    BehringerMixerFlowHandler.create_list(mixer_info["matrix"]["number"])
-                ),
-                vol.Optional("AUXIN_CONFIG", default=existing_values.get("AUXIN_CONFIG", [])): cv.multi_select(
-                    BehringerMixerFlowHandler.create_list(mixer_info["auxin"]["number"])
-                ),
-                vol.Optional("HEADAMPS_CONFIG", default=existing_values.get("HEADAMPS_CONFIG", [])): cv.multi_select(
-                    BehringerMixerFlowHandler.create_list(mixer_info["head_amps"]["number"])
-                ),
-                vol.Optional("MAIN_CONFIG", default=existing_values.get("MAIN_CONFIG", True)): cv.boolean,
-                vol.Optional("CHANNELSENDS_CONFIG", default=existing_values.get("CHANNELSENDS_CONFIG", False)): cv.boolean,
-                vol.Optional("BUSSENDS_CONFIG", default=existing_values.get("BUSSENDS_CONFIG", False)): cv.boolean,
-                vol.Optional("DBSENSORS", default=existing_values.get("DBSENSORS", True)): cv.boolean,
-                vol.Optional("UPSCALE_100", default=existing_values.get("UPSCALE_100", False)): cv.boolean,
-            }
-        ),
+        data_schema=vol.Schema(schema_dict),
         errors=errors,
     )
+

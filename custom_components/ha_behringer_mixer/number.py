@@ -126,7 +126,6 @@ class BehringerMixerFader(BehringerMixerEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
-
         if self.coordinator.config_entry.data.get("UPSCALE_100"):
             value = value / 100
         await self.coordinator.client.async_set_value(
