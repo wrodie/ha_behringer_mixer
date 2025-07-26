@@ -72,6 +72,18 @@ Connection to the mixer is performed via ip address using UDP. If the IP address
 
 This information on changes to the mixer is written to the HA history/recorder databases so this may result in lots of state being stored if the mixer changes a lot.  You may want to consider excluding these entities from storing history.
 
+### Behringer Wing
+The Wing is quite different to how the other X/M/X series mixers work. Not all the functionality of the the other mixers is supported with the wing with this Integration:
+ - No Headamp support
+ - No USB recorder support - USB player is supported
+ - Bus->Bus send controls (Bus to Matrix/Main is supported)
+
+I don't believe any of these are impossible to achieve, just because they are tricker, I haven't put in the time yet.  I'm not even sure if they are needed.
+
+**WARNING - Subscriptions** - This integration makes use of OSC subscription to get updated values of controls.  Differently to the X-Series mixers the Wing only supports one client to receive this data at a time.  So this means if you are using another integration that makes use of this same OSC subscription on the mixer, eg [Bitfocus Companion](https://bitfocus.io/companion), then they will compete for the same connection and both won't work properly.  I believe other software such as Wing Edit/WingQ/Mixing Station make use of a different protocol and don't suffer with this problem.
+
+**WARNING 2 - Loading Scenes** - While this integration does support loading Wing Snapshots, the Wing API only supports doing this when the mixer already has a show loaded.  If you are powering up your mixer, then you will need to set a show to autoload by prefixing its name with `STARTUP_`.
+
 ## Contributions are welcome
 
 If you want to contribute to this please read the [Contribution guidelines](CONTRIBUTING.md)
