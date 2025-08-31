@@ -67,4 +67,7 @@ class BehringerMixerDbSensor(BehringerMixerEntity, SensorEntity):
     def native_value(self) -> float | None:
         """Value of the entity."""
         value = self.coordinator.data.get(self.base_address + "/mix_fader_db", "")
-        return value if value is not None else -90
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return -90
