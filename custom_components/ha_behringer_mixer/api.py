@@ -1,4 +1,5 @@
 """API Client. to connect to Behringer mixer."""
+
 from __future__ import annotations
 import logging
 import asyncio

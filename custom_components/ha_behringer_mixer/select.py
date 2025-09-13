@@ -1,4 +1,5 @@
 """Select entity platform for behringer_mixer."""
+
 from __future__ import annotations
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
@@ -68,6 +69,7 @@ class BehringerMixerUSBState(BehringerMixerEntity, SelectEntity):
         if self.base_address in self.coordinator.data:
             return self.coordinator.data[self.base_address]
         return None
+
 
 class BehringerMixerX32XUSBConfig(BehringerMixerEntity, SelectEntity):
     """Behringer_mixer select class."""

@@ -1,4 +1,5 @@
 """DataUpdateCoordinator for Behringer Mixer Integration."""
+
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
@@ -59,14 +60,18 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
         }
         num_mains = mixer_info.get("mains", {}).get("number", 0)
         if self.config_entry.data.get("MAIN_CONFIG"):
-            if(num_mains == 1):
+            if num_mains == 1:
                 self.fader_group(entities, "main", 0, "main/st")
                 if mixer_info.get("has_mono", False):
                     self.fader_group(entities, "mono", 0, "main/m")
-            elif(num_mains > 1):
+            elif num_mains > 1:
                 for main_number in range(num_mains):
                     self.fader_group(
-                        entities, "main", (main_number+1), "main", f"Main {main_number + 1}"
+                        entities,
+                        "main",
+                        (main_number + 1),
+                        "main",
+                        f"Main {main_number + 1}",
                     )
 
         # Input channels
@@ -117,12 +122,7 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
         if self.config_entry.data.get("HEADAMPS_CONFIG"):
             base_key = mixer_info.get("head_amps", {}).get("base_address")
             for headamp_number in self.config_entry.data.get("HEADAMPS_CONFIG", []):
-                self.headamp_group(
-                    entities,
-                    "headamp",
-                    headamp_number,
-                    base_key
-                )
+                self.headamp_group(entities, "headamp", headamp_number, base_key)
         # Mute Groups
         if self.config_entry.data.get("MUTE_GROUPS"):
             num_mute_groups = mixer_info.get("mute_groups", {}).get("number")
@@ -130,9 +130,9 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
             for mute_group_number in range(num_mute_groups):
                 base_address = f"/{base_key}"
                 default_name = "Mute Group"
-                entity_part = "mute_group" + "_" + str(mute_group_number+1)
-                base_address = base_address + "/" + str(mute_group_number+1)
-                default_name = default_name + " " + str(mute_group_number+1 or 0)
+                entity_part = "mute_group" + "_" + str(mute_group_number + 1)
+                base_address = base_address + "/" + str(mute_group_number + 1)
+                default_name = default_name + " " + str(mute_group_number + 1 or 0)
                 entities["SWITCH"].append(
                     {
                         "type": "on",
