@@ -22,7 +22,8 @@
                     "BUSSENDS_CONFIG": "Import Bus->Matrix Sends?",
                     "DBSENSORS": "Create additional sensors with the dB values of the faders.  This value is also available as an attribute on the fader.",
                     "UPSCALE_100": "Convert fader base values from 0.0-1.0 to 0-100 (do this only if you really need it)",
-                    "HEADAMPS_CONFIG": "Head Amps to import"
+                    "HEADAMPS_CONFIG": "Head Amps to import",
+                    "MUTE_GROUPS": "Import Mute Groups"
                 }
             },
             "reconfigure": {
@@ -45,7 +46,8 @@
                     "BUSSENDS_CONFIG": "Import Bus->Matrix Sends?",
                     "DBSENSORS": "Create additional sensors with the dB values of the faders.  This value is also available as an attribute on the fader.",
                     "UPSCALE_100": "Convert fader base values from 0.0-1.0 to 0-100 (do this only if you really need it)",
-                    "HEADAMPS_CONFIG": "Head Amps to import"
+                    "HEADAMPS_CONFIG": "Head Amps to import",
+                    "MUTE_GROUPS": "Import Mute Groups"
                 }
             }
         },

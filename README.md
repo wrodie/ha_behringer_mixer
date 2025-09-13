@@ -23,6 +23,7 @@ In addition to these 'fader' related variables, also provided is
 - Firmware (Read only)
 - USB Filename (Read only)
 - USB Player/Recorder status (Read/Write)
+- Mute Groups
 
 ## Mixers Supported
 

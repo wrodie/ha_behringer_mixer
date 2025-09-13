@@ -85,6 +85,7 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             self.init_info["BUSSENDS_CONFIG"] = user_input["BUSSENDS_CONFIG"] or False
             self.init_info["DBSENSORS"] = user_input["DBSENSORS"] or False
             self.init_info["UPSCALE_100"] = user_input["UPSCALE_100"] or False
+            self.init_info["MUTE_GROUPS"] = user_input["MUTE_GROUPS"] or False
             self.init_info["HEADAMPS_CONFIG"] = user_input.get("HEADAMPS_CONFIG")
             return self.async_create_entry(
                 title=self.init_info["NAME"],
@@ -214,6 +215,7 @@ async def show_options_form(form_id, object, errors, existing_values) -> config_
         vol.Optional("CHANNELSENDS_CONFIG", default=existing_values.get("CHANNELSENDS_CONFIG", False)): cv.boolean,
         vol.Optional("BUSSENDS_CONFIG", default=existing_values.get("BUSSENDS_CONFIG", False)): cv.boolean,
         vol.Optional("DBSENSORS", default=existing_values.get("DBSENSORS", False)): cv.boolean,
+        vol.Optional("MUTE_GROUPS", default=existing_values.get("MUTE_GROUPS", False)): cv.boolean,
         vol.Optional("UPSCALE_100", default=existing_values.get("UPSCALE_100", False)): cv.boolean,
     }
 

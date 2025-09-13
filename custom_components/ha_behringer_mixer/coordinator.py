@@ -123,6 +123,25 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
                     headamp_number,
                     base_key
                 )
+        # Mute Groups
+        if self.config_entry.data.get("MUTE_GROUPS"):
+            num_mute_groups = mixer_info.get("mute_groups", {}).get("number")
+            base_key = mixer_info.get("mute_groups", {}).get("base_address")
+            for mute_group_number in range(num_mute_groups):
+                base_address = f"/{base_key}"
+                default_name = "Mute Group"
+                entity_part = "mute_group" + "_" + str(mute_group_number+1)
+                base_address = base_address + "/" + str(mute_group_number+1)
+                default_name = default_name + " " + str(mute_group_number+1 or 0)
+                entities["SWITCH"].append(
+                    {
+                        "type": "on",
+                        "key": f"{self.entity_base_id}_{entity_part}_on",
+                        "default_name": default_name,
+                        "name_suffix": "On",
+                        "base_address": f"{base_address}/on",
+                    }
+                )
 
         entities["NUMBER"].append(
             {
@@ -150,12 +169,21 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
         )
         entities["SELECT"].append(
             {
-                "type": "generic",
+                "type": "tape_state",
                 "key": f"{self.entity_base_id}_tape_state",
                 "default_name": "USB Tape State",
                 "base_address": "/usb/state",
             }
         )
+        if self.client.type() == "X32":
+            entities["SELECT"].append(
+                {
+                    "type": "xusb_card_config",
+                    "key": f"{self.entity_base_id}_xusbcard_config",
+                    "default_name": "X-USB Output Config",
+                    "base_address": "/config/cards/XUSBmode",
+                }
+            )
         return entities
 
     def fader_group(self, entities, entity_type, index_number, base_key, name=""):

@@ -51,6 +51,10 @@ class BehringerMixerApiClient:
             task_sub_status.add_done_callback(self.tasks.discard)
         return True
 
+    def type(self):
+        """Return the mixer type."""
+        return self._mixer_type
+
     def mixer_info(self):
         """Return the mixer info."""
         return self._mixer.info()
