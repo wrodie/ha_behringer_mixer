@@ -1,8 +1,8 @@
 """API Client. to connect to Behringer mixer."""
 
 from __future__ import annotations
-import logging
 import asyncio
+from .const import LOGGER
 from behringer_mixer import mixer_api
 
 
@@ -33,7 +33,11 @@ class BehringerMixerApiClient:
     async def setup(self, test_connection_only=False):
         """Set up everything necessary."""
         self._mixer = mixer_api.create(
-            self._mixer_type, ip=self._mixer_ip, logLevel=logging.WARNING, delay=0.002
+            self._mixer_type,
+            ip=self._mixer_ip,
+            logLevel=LOGGER.getEffectiveLevel(),
+            logger=LOGGER,
+            delay=0.002,
         )
         await self._mixer.start()
         if not test_connection_only:
