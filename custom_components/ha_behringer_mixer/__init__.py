@@ -37,9 +37,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    except ConfigEntryNotReady:
+        raise
     except Exception as e:
         LOGGER.error("Failed to set up entry: %s", e)
-        return False
+        raise ConfigEntryNotReady(f"Unexpected error during setup: {e}") from e
 
     return True
 
