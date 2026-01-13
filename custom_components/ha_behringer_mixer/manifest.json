@@ -13,7 +13,7 @@
     "custom_components.ha_behringer_mixer"
   ],
   "requirements": [
-    "behringer-mixer==0.4.11"
+    "behringer-mixer==0.4.12"
   ],
-  "version": "0.1.19"
+  "version": "0.1.20"
 }
