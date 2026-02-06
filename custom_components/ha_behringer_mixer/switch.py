@@ -5,11 +5,14 @@ from homeassistant.components.switch import SwitchEntity, SwitchEntityDescriptio
 
 from .const import DOMAIN
 from .entity import BehringerMixerEntity
+from .utils import async_migrate_old_unique_ids
 
 
 async def async_setup_entry(hass, entry, async_add_devices):
     """Set up the sensor platform."""
+
     coordinator = hass.data[DOMAIN][entry.entry_id]
+    await async_migrate_old_unique_ids(hass, entry, "switch")
     devices_list = build_entities(coordinator)
     async_add_devices(devices_list)
 
