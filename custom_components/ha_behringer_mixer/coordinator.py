@@ -16,6 +16,7 @@ from .api import (
     BehringerMixerApiClientError,
 )
 from .const import DOMAIN, LOGGER
+from .utils import sanitize_name
 
 
 class MixerDataUpdateCoordinator(DataUpdateCoordinator):
@@ -37,7 +38,8 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
             name=DOMAIN,
         )
         self.sub_connected = True
-        self.entity_base_id = self.config_entry.data["NAME"]
+
+        self.entity_base_id = sanitize_name(self.config_entry.data["NAME"])
         self.entity_catalog = self.build_entity_catalog(self.client.mixer_info())
 
     async def _async_update_data(self):
