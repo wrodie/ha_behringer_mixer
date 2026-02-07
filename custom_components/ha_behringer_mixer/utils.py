@@ -20,6 +20,7 @@ def sanitize_name(raw_name: str) -> str:
     Returns:
         Sanitized name with only lowercase, digits, and underscores
         (e.g., "x32c_07_68_95")
+
     """
     return ha_slugify(raw_name, separator="_")
 
