@@ -7,6 +7,7 @@ from homeassistant.util import slugify as ha_slugify
 
 _LOGGER = logging.getLogger(__name__)
 
+
 def sanitize_name(raw_name: str) -> str:
     """Sanitize mixer/device names for Home Assistant entity_id compliance.
 
@@ -44,11 +45,10 @@ async def async_migrate_old_unique_ids(hass, config_entry, platform_domain):
         if entry.unique_id != clean_unique_id:
             _LOGGER.info(
                 "Migrating %s entity unique_id: %s -> %s",
-                platform_domain, entry.unique_id, clean_unique_id
+                platform_domain,
+                entry.unique_id,
+                clean_unique_id,
             )
 
             # Update the registry. This moves settings/history to the new ID.
-            ent_reg.async_update_entity(
-                entry.entity_id,
-                new_unique_id=clean_unique_id
-            )
+            ent_reg.async_update_entity(entry.entity_id, new_unique_id=clean_unique_id)

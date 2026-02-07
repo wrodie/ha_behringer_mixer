@@ -13,8 +13,9 @@ from .api import (
     BehringerMixerApiClientCommunicationError,
     BehringerMixerApiClientError,
 )
-from .const import DOMAIN, LOGGER
+from .const import DOMAIN, LOGGER, REPO_URL
 
+FORM_PLACEHOLDERS = {"repo_url": REPO_URL}
 
 class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for BehringerMixer."""
@@ -48,6 +49,7 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="user",
+            description_placeholders=FORM_PLACEHOLDERS,
             data_schema=vol.Schema(
                 {
                     vol.Required("MIXER_IP"): selector.TextSelector(
@@ -158,6 +160,7 @@ class BehringerMixerFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="reconfigure",
+            description_placeholders=FORM_PLACEHOLDERS,
             data_schema=vol.Schema(
                 {
                     vol.Required(
@@ -267,6 +270,7 @@ async def show_options_form(
 
     return object.async_show_form(
         step_id=form_id,
+        description_placeholders=FORM_PLACEHOLDERS,
         data_schema=vol.Schema(schema_dict),
         errors=errors,
     )
