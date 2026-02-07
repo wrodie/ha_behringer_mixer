@@ -1,4 +1,5 @@
 """BlueprintEntity class."""
+
 from __future__ import annotations
 
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
@@ -6,6 +7,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import ATTRIBUTION, DOMAIN, VERSION
 from .coordinator import MixerDataUpdateCoordinator
+from .utils import sanitize_name
 
 
 class BehringerMixerEntity(CoordinatorEntity):
@@ -25,10 +27,9 @@ class BehringerMixerEntity(CoordinatorEntity):
         self.base_address = entity_setup.get("base_address")
         self.default_name = entity_setup.get("default_name") or ""
         self.name_suffix = entity_setup.get("name_suffix") or ""
-        key = entity_setup.get("key")
+        key = sanitize_name(entity_setup.get("key"))
         self._attr_unique_id = key
-        self._attr_entity_id = DOMAIN + "." + key
-        self.entity_id = self._attr_entity_id
+        self._attr_suggested_object_id = DOMAIN + "." + key
         self.entity_description = entity_description
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, coordinator.config_entry.entry_id)},
