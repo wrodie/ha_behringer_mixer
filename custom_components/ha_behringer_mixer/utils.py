@@ -15,9 +15,11 @@ def sanitize_name(raw_name: str) -> str:
     with Home Assistant 2026.02+ entity ID requirements.
 
     Args:
+
         raw_name: The raw name to sanitize (e.g., "X32C-07-68-95")
 
     Returns:
+
         Sanitized name with only lowercase, digits, and underscores
         (e.g., "x32c_07_68_95")
     """
@@ -25,8 +27,8 @@ def sanitize_name(raw_name: str) -> str:
 
 
 async def async_migrate_old_unique_ids(hass, config_entry, platform_domain):
-    """
-    Migrate hyphenated unique IDs to sanitized versions for 2026.02 compliance.
+    """Migrate hyphenated unique IDs to sanitized versions for 2026.02 compliance.
+
     Call this from each platform's async_setup_entry.
     """
     ent_reg = er.async_get(hass)

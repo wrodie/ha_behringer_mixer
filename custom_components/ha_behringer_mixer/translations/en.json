@@ -2,7 +2,7 @@
     "config": {
         "step": {
             "user": {
-                "description": "If you need help with the configuration have a look here: { repo_url }",
+                "description": "If you need help with the configuration have a look here: {repo_url}",
                 "data": {
                     "MIXER_IP": "Mixer IP Address",
                     "MIXER_TYPE": "Mixer Type eg X32, XR12"
@@ -27,7 +27,7 @@
                 }
             },
             "reconfigure": {
-                "description": "If you need help with the configuration have a look here: { repo_url }",
+                "description": "If you need help with the configuration have a look here: {repo_url}",
                 "data": {
                     "MIXER_IP": "Mixer IP Address"
                 }
