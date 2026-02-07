@@ -38,7 +38,6 @@ class MixerDataUpdateCoordinator(DataUpdateCoordinator):
             name=DOMAIN,
         )
         self.sub_connected = True
-
         self.entity_base_id = sanitize_name(self.config_entry.data["NAME"])
         self.entity_catalog = self.build_entity_catalog(self.client.mixer_info())
 
