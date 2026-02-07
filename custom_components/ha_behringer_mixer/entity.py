@@ -30,8 +30,8 @@ class BehringerMixerEntity(CoordinatorEntity):
 
         key = sanitize_name(entity_setup.get("key"))
         self._attr_unique_id = key
-        self._attr_entity_id = DOMAIN + "." + key
-        self.entity_id = self._attr_entity_id
+        self._attr_suggested_object_id = DOMAIN + "." + key
+        #self.suggested_object_id = self._attr_suggested_object_id
         self.entity_description = entity_description
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, coordinator.config_entry.entry_id)},
