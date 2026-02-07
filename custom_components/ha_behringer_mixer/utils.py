@@ -15,11 +15,9 @@ def sanitize_name(raw_name: str) -> str:
     with Home Assistant 2026.02+ entity ID requirements.
 
     Args:
-
         raw_name: The raw name to sanitize (e.g., "X32C-07-68-95")
 
     Returns:
-
         Sanitized name with only lowercase, digits, and underscores
         (e.g., "x32c_07_68_95")
     """
